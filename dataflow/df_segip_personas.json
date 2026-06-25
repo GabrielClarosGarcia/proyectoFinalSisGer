@@ -6,11 +6,62 @@
 		},
 		"type": "MappingDataFlow",
 		"typeProperties": {
-			"sources": [],
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "bronce_segip_personas",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
 			"sinks": [],
-			"transformations": [],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
 			"scriptLines": [
-				""
+				"source(output(",
+				"          ci_original as string,",
+				"          ci_normalizado as string,",
+				"          nombres as string,",
+				"          apellido_paterno as string,",
+				"          apellido_materno as string,",
+				"          fecha_nacimiento as string,",
+				"          genero as string,",
+				"          estado_civil as string,",
+				"          ci_conyuge_normalizado as string,",
+				"          numero_hijos as string,",
+				"          ci_padre_normalizado as string,",
+				"          ci_madre_normalizado as string,",
+				"          profesion as string,",
+				"          nivel_estudios as string,",
+				"          municipio_residencia as string,",
+				"          fecha_emision as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT\\n    TRIM(ci) AS ci_original,\\n    TRIM(ci) AS ci_normalizado,\\n    TRIM(nombres) AS nombres,\\n    TRIM(apellido_paterno) AS apellido_paterno,\\n    TRIM(apellido_materno) AS apellido_materno,\\n    TRIM(fecha_nacimiento) AS fecha_nacimiento,\\n    TRIM(genero) AS genero,\\n    TRIM(estado_civil) AS estado_civil,\\n    TRIM(ci_conyuge) AS ci_conyuge_normalizado,\\n    TRIM(numero_hijos) AS numero_hijos,\\n    TRIM(ci_padre) AS ci_padre_normalizado,\\n    TRIM(ci_madre) AS ci_madre_normalizado,\\n    TRIM(profesion) AS profesion,\\n    TRIM(nivel_estudios) AS nivel_estudios,\\n    TRIM(municipio_residencia) AS municipio_residencia,\\n    TRIM(fecha_emision) AS fecha_emision\\nFROM bronze.segip_personas\\nWHERE ci IS NOT NULL\\n  AND TRIM(ci) <> \\'\\'',",
+				"     format: 'query') ~> source1",
+				"source1 derive(ci_normalizado = upper(regexReplace(regexReplace(regexReplace(trim(ci_normalizado), '-', ''), '\\\\s+', ''), '\\\\.', '')),",
+				"          nombres = initCap(regexReplace(trim(nombres), '\\\\s+', ' ')),",
+				"          apellido_paterno = initCap(regexReplace(trim(apellido_paterno), '\\\\s+', ' ')),",
+				"          apellido_materno = initCap(regexReplace(trim(apellido_materno), '\\\\s+', ' ')),",
+				"          fecha_nacimiento = coalesce(     toDate(fecha_nacimiento, 'yyyy-MM-dd'),     toDate(fecha_nacimiento, 'dd/MM/yyyy'),     toDate(fecha_nacimiento, 'MM/dd/yyyy'),     toDate(fecha_nacimiento, 'dd-MM-yyyy') ),",
+				"          genero = case(     in(['F','FEMENINO','Femenino','femenino'], genero), 'FEMENINO',     in(['M','MASCULINO','Masculino','masculino'], genero), 'MASCULINO',     isNull(genero), 'SIN_DATO',     upper(trim(genero)) ),",
+				"          estado_civil = case(     in(['soltera','SOLTERA','Soltera'], estado_civil), 'SOLTERA',     in(['casada','CASADA','Casada'], estado_civil), 'CASADA',     in(['divorciada','DIVORCIADA','Divorciada'], estado_civil), 'DIVORCIADA',     in(['viuda','VIUDA','Viuda'], estado_civil), 'VIUDA',     isNull(estado_civil), 'SIN_DATO',     upper(trim(estado_civil)) ),",
+				"          ci_conyuge_normalizado = iif(isNull(ci_conyuge_normalizado) || trim(ci_conyuge_normalizado) == '', toString(null()), upper(regexReplace(regexReplace(regexReplace(trim(ci_conyuge_normalizado), '-', ''), '\\\\s+', ''), '\\\\.', ''))),",
+				"          numero_hijos = iifNull(toInteger(numero_hijos), 0),",
+				"          ci_padre_normalizado = iif(isNull(ci_padre_normalizado) || trim(ci_padre_normalizado) == '', toString(null()), upper(regexReplace(regexReplace(regexReplace(trim(ci_padre_normalizado), '-', ''), '\\\\s+', ''), '\\\\.', ''))),",
+				"          ci_madre_normalizado = iif(isNull(ci_madre_normalizado) || trim(ci_madre_normalizado) == '', toString(null()), upper(regexReplace(regexReplace(regexReplace(trim(ci_madre_normalizado), '-', ''), '\\\\s+', ''), '\\\\.', ''))),",
+				"          profesion = iifNull(initCap(regexReplace(trim(profesion), '\\\\s+', ' ')), 'Sin Profesion'),",
+				"          nivel_estudios = iifNull(initCap(regexReplace(trim(nivel_estudios), '\\\\s+', ' ')), 'Sin Dato'),",
+				"          municipio_residencia = iifNull(initCap(regexReplace(trim(municipio_residencia), '\\\\s+', ' ')), 'Sin Municipio'),",
+				"          fecha_emision = coalesce(     toDate(fecha_emision, 'yyyy-MM-dd'),     toDate(fecha_emision, 'dd/MM/yyyy'),     toDate(fecha_emision, 'MM/dd/yyyy'),     toDate(fecha_emision, 'dd-MM-yyyy') ),",
+				"          registro_valido = iif(isNull(ci_normalizado), false(), true()),",
+				"          observacion_calidad = iif(isNull(ci_normalizado), 'CI inválido', 'OK')) ~> derivedColumn1"
 			]
 		}
 	}
