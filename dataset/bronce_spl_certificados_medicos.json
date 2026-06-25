@@ -1,0 +1,48 @@
+{
+	"name": "bronce_spl_certificados_medicos",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dw_beneficiarios",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "bronze/SPL"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "certificado_id",
+				"type": "varchar"
+			},
+			{
+				"name": "afiliacion_id",
+				"type": "varchar"
+			},
+			{
+				"name": "fecha_emision",
+				"type": "varchar"
+			},
+			{
+				"name": "semana_gestacion",
+				"type": "varchar"
+			},
+			{
+				"name": "fecha_probable_parto",
+				"type": "varchar"
+			},
+			{
+				"name": "medico_responsable",
+				"type": "varchar"
+			},
+			{
+				"name": "estado",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "bronze",
+			"table": "spl_certificados_medicos"
+		}
+	}
+}

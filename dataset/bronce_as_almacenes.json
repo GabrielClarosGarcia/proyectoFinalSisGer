@@ -1,0 +1,48 @@
+{
+	"name": "bronce_as_almacenes",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dw_beneficiarios",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "bronze/AS"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "almacen_id",
+				"type": "varchar"
+			},
+			{
+				"name": "nombre",
+				"type": "varchar"
+			},
+			{
+				"name": "municipio",
+				"type": "varchar"
+			},
+			{
+				"name": "departamento",
+				"type": "varchar"
+			},
+			{
+				"name": "direccion",
+				"type": "varchar"
+			},
+			{
+				"name": "capacidad_m3",
+				"type": "varchar"
+			},
+			{
+				"name": "estado",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "bronze",
+			"table": "as_almacenes"
+		}
+	}
+}

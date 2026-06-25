@@ -1,0 +1,40 @@
+{
+	"name": "bronce_spl_cajas",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dw_beneficiarios",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "bronze/SPL"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "ID",
+				"type": "varchar"
+			},
+			{
+				"name": "Nombre",
+				"type": "varchar"
+			},
+			{
+				"name": "Sigla",
+				"type": "varchar"
+			},
+			{
+				"name": "Tipo",
+				"type": "varchar"
+			},
+			{
+				"name": "Estado",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "bronze",
+			"table": "spl_cajas"
+		}
+	}
+}

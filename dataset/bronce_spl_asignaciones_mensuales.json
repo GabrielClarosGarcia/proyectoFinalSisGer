@@ -1,0 +1,52 @@
+{
+	"name": "bronce_spl_asignaciones_mensuales",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dw_beneficiarios",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "bronze/SPL"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "asignacion_id",
+				"type": "varchar"
+			},
+			{
+				"name": "afiliacion_id",
+				"type": "varchar"
+			},
+			{
+				"name": "mes",
+				"type": "varchar"
+			},
+			{
+				"name": "gestion",
+				"type": "varchar"
+			},
+			{
+				"name": "monto_bs",
+				"type": "varchar"
+			},
+			{
+				"name": "monto_productos",
+				"type": "varchar"
+			},
+			{
+				"name": "monto_carnes",
+				"type": "varchar"
+			},
+			{
+				"name": "estado",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "bronze",
+			"table": "spl_asignaciones_mensuales"
+		}
+	}
+}

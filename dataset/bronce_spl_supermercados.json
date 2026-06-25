@@ -1,0 +1,44 @@
+{
+	"name": "bronce_spl_supermercados",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dw_beneficiarios",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "bronze/SPL"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "ID",
+				"type": "varchar"
+			},
+			{
+				"name": "Cadena",
+				"type": "varchar"
+			},
+			{
+				"name": "Sucursal",
+				"type": "varchar"
+			},
+			{
+				"name": "Municipio",
+				"type": "varchar"
+			},
+			{
+				"name": "Dirección",
+				"type": "varchar"
+			},
+			{
+				"name": "Estado",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "bronze",
+			"table": "spl_supermercados"
+		}
+	}
+}

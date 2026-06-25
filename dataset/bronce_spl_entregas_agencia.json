@@ -1,0 +1,52 @@
+{
+	"name": "bronce_spl_entregas_agencia",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dw_beneficiarios",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "bronze/SPL"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "entrega_ag_id",
+				"type": "varchar"
+			},
+			{
+				"name": "asignacion_id",
+				"type": "varchar"
+			},
+			{
+				"name": "ci_beneficiaria",
+				"type": "varchar"
+			},
+			{
+				"name": "fecha_entrega",
+				"type": "varchar"
+			},
+			{
+				"name": "productos",
+				"type": "varchar"
+			},
+			{
+				"name": "lote",
+				"type": "varchar"
+			},
+			{
+				"name": "peso_kg",
+				"type": "varchar"
+			},
+			{
+				"name": "punto_entrega",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "bronze",
+			"table": "spl_entregas_agencia"
+		}
+	}
+}

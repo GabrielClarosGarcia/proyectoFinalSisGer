@@ -1,0 +1,44 @@
+{
+	"name": "bronce_spl_empleadores",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dw_beneficiarios",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "bronze/SPL"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "empleador_id",
+				"type": "varchar"
+			},
+			{
+				"name": "nit",
+				"type": "varchar"
+			},
+			{
+				"name": "razon_social",
+				"type": "varchar"
+			},
+			{
+				"name": "tipo",
+				"type": "varchar"
+			},
+			{
+				"name": "nro_patronal",
+				"type": "varchar"
+			},
+			{
+				"name": "municipio",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "bronze",
+			"table": "spl_empleadores"
+		}
+	}
+}
