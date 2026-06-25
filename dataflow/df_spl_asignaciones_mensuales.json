@@ -6,11 +6,47 @@
 		},
 		"type": "MappingDataFlow",
 		"typeProperties": {
-			"sources": [],
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "bronce_spl_asignaciones_mensuales",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
 			"sinks": [],
-			"transformations": [],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
 			"scriptLines": [
-				""
+				"source(output(",
+				"          asignacion_id as string,",
+				"          afiliacion_id as string,",
+				"          mes as string,",
+				"          gestion as string,",
+				"          monto_bs as string,",
+				"          monto_productos as string,",
+				"          monto_carnes as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT\\n    TRIM(asignacion_id) AS asignacion_id,\\n    TRIM(afiliacion_id) AS afiliacion_id,\\n    TRIM(mes) AS mes,\\n    TRIM(gestion) AS gestion,\\n    TRIM(monto_bs) AS monto_bs,\\n    TRIM(monto_productos) AS monto_productos,\\n    TRIM(monto_carnes) AS monto_carnes,\\n    TRIM(estado) AS estado\\nFROM bronze.spl_asignaciones_mensuales\\nWHERE asignacion_id IS NOT NULL\\n  AND TRIM(asignacion_id) <> \\'\\'',",
+				"     format: 'query') ~> source1",
+				"source1 derive(asignacion_id = toInteger(asignacion_id),",
+				"          afiliacion_id = toInteger(afiliacion_id),",
+				"          mes = toInteger(mes),",
+				"          gestion = toInteger(gestion),",
+				"          monto_bs = toDecimal(regexReplace(toString(monto_bs), '[^0-9.]', '')),",
+				"          monto_productos = toDecimal(regexReplace(toString(monto_productos), '[^0-9.]', '')),",
+				"          monto_carnes = toDecimal(regexReplace(toString(monto_carnes), '[^0-9.]', '')),",
+				"          estado = case(     in(['Acreditado','ACREDITADO','acreditado','aCREDITADO','pENDIENTE'], estado) && !in(['pENDIENTE'], estado), 'ACREDITADO',     in(['Pendiente','PENDIENTE','pendiente','pENDIENTE'], estado), 'PENDIENTE',     isNull(estado), 'SIN_ESTADO',     upper(trim(estado)) ),",
+				"          registro_valido = iif(     isNull(asignacion_id) ||     isNull(afiliacion_id) ||     isNull(mes) ||     isNull(gestion),     false(),     true() ),",
+				"          observacion_calidad = case(     isNull(asignacion_id), 'asignacion_id inválido',     isNull(afiliacion_id), 'afiliacion_id inválido',     isNull(mes), 'mes inválido',     isNull(gestion), 'gestion inválida',     'OK' )) ~> derivedColumn1"
 			]
 		}
 	}

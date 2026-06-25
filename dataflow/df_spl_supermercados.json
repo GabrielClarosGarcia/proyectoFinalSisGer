@@ -6,11 +6,43 @@
 		},
 		"type": "MappingDataFlow",
 		"typeProperties": {
-			"sources": [],
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "bronce_spl_supermercados",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
 			"sinks": [],
-			"transformations": [],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
 			"scriptLines": [
-				""
+				"source(output(",
+				"          supermercado_id as string,",
+				"          cadena as string,",
+				"          sucursal as string,",
+				"          municipio as string,",
+				"          direccion as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT\\n    TRIM(ID) AS supermercado_id,\\n    TRIM(Cadena) AS cadena,\\n    TRIM(Sucursal) AS sucursal,\\n    TRIM(Municipio) AS municipio,\\n    TRIM([Dirección]) AS direccion,\\n    TRIM(Estado) AS estado\\nFROM bronze.spl_supermercados\\nWHERE ID IS NOT NULL\\n  AND TRIM(ID) <> \\'\\'',",
+				"     format: 'query') ~> source1",
+				"source1 derive(supermercado_id = toInteger(supermercado_id),",
+				"          cadena = initCap(regexReplace(trim(cadena), '\\\\s+', ' ')),",
+				"          sucursal = initCap(regexReplace(trim(sucursal), '\\\\s+', ' ')),",
+				"          municipio = initCap(regexReplace(trim(municipio), '\\\\s+', ' ')),",
+				"          direccion = initCap(regexReplace(trim(direccion), '\\\\s+', ' ')),",
+				"          estado = case(     in(['Activo','ACTIVO','activo'], estado), 'ACTIVO',     in(['Inactivo','INACTIVO','inactivo'], estado), 'INACTIVO',     isNull(estado), 'SIN_ESTADO',     upper(trim(estado)) ),",
+				"          registro_valido = iif(isNull(supermercado_id), false(), true()),",
+				"          observacion_calidad = iif(isNull(supermercado_id), 'supermercado_id inválido', 'OK')) ~> derivedColumn1"
 			]
 		}
 	}

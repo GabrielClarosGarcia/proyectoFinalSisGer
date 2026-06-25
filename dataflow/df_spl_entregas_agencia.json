@@ -6,11 +6,48 @@
 		},
 		"type": "MappingDataFlow",
 		"typeProperties": {
-			"sources": [],
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "bronce_spl_entregas_agencia",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
 			"sinks": [],
-			"transformations": [],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
 			"scriptLines": [
-				""
+				"source(output(",
+				"          entrega_ag_id as string,",
+				"          asignacion_id as string,",
+				"          ci_beneficiaria_original as string,",
+				"          ci_beneficiaria_normalizado as string,",
+				"          fecha_entrega as string,",
+				"          productos as string,",
+				"          lote as string,",
+				"          peso_kg as string,",
+				"          punto_entrega as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT\\n    TRIM(entrega_ag_id) AS entrega_ag_id,\\n    TRIM(asignacion_id) AS asignacion_id,\\n    TRIM(ci_beneficiaria) AS ci_beneficiaria_original,\\n    TRIM(ci_beneficiaria) AS ci_beneficiaria_normalizado,\\n    TRIM(fecha_entrega) AS fecha_entrega,\\n    TRIM(productos) AS productos,\\n    TRIM(lote) AS lote,\\n    TRIM(peso_kg) AS peso_kg,\\n    TRIM(punto_entrega) AS punto_entrega\\nFROM bronze.spl_entregas_agencia\\nWHERE entrega_ag_id IS NOT NULL\\n  AND TRIM(entrega_ag_id) <> \\'\\'',",
+				"     format: 'query') ~> source1",
+				"source1 derive(entrega_ag_id = toInteger(entrega_ag_id),",
+				"          asignacion_id = toInteger(asignacion_id),",
+				"          ci_beneficiaria_normalizado = upper(regexReplace(regexReplace(regexReplace(trim(ci_beneficiaria_normalizado), '-', ''), '\\\\s+', ''), '\\\\.', '')),",
+				"          fecha_entrega = coalesce(     toDate(fecha_entrega, 'yyyy-MM-dd'),     toDate(fecha_entrega, 'dd/MM/yyyy'),     toDate(fecha_entrega, 'MM/dd/yyyy'),     toDate(fecha_entrega, 'dd-MM-yyyy') ),",
+				"          productos = iifNull(initCap(regexReplace(trim(productos), '\\\\s+', ' ')), 'Sin Productos'),",
+				"          lote = iifNull(upper(regexReplace(trim(lote), '\\\\s+', '')), 'SIN_LOTE'),",
+				"          peso_kg = toDecimal(regexReplace(toString(peso_kg), '[^0-9.]', '')),",
+				"          punto_entrega = iifNull(initCap(regexReplace(trim(punto_entrega), '\\\\s+', ' ')), 'Sin Punto'),",
+				"          registro_valido = iif(     isNull(entrega_ag_id) ||     isNull(asignacion_id) ||     isNull(ci_beneficiaria_normalizado) ||     isNull(fecha_entrega),     false(),     true() ),",
+				"          observacion_calidad = case(     isNull(entrega_ag_id), 'entrega_ag_id inválido',     isNull(asignacion_id), 'asignacion_id inválido',     isNull(ci_beneficiaria_normalizado), 'CI beneficiaria inválido',     isNull(fecha_entrega), 'fecha_entrega inválida',     'OK' )) ~> derivedColumn1"
 			]
 		}
 	}

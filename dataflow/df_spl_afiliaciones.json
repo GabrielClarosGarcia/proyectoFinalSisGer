@@ -6,11 +6,48 @@
 		},
 		"type": "MappingDataFlow",
 		"typeProperties": {
-			"sources": [],
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "bronce_spl_afiliaciones",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
 			"sinks": [],
-			"transformations": [],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
 			"scriptLines": [
-				""
+				"source(output(",
+				"          afiliacion_id as string,",
+				"          ci_beneficiaria_original as string,",
+				"          ci_beneficiaria_normalizado as string,",
+				"          empleador_id as string,",
+				"          caja_id as string,",
+				"          fecha_afiliacion as string,",
+				"          nro_matricula as string,",
+				"          tipo_subsidio as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT\\n    TRIM(afiliacion_id) AS afiliacion_id,\\n    TRIM(ci_beneficiaria) AS ci_beneficiaria_original,\\n    TRIM(ci_beneficiaria) AS ci_beneficiaria_normalizado,\\n    TRIM(empleador_id) AS empleador_id,\\n    TRIM(caja_id) AS caja_id,\\n    TRIM(fecha_afiliacion) AS fecha_afiliacion,\\n    TRIM(nro_matricula) AS nro_matricula,\\n    TRIM(tipo_subsidio) AS tipo_subsidio,\\n    TRIM(estado) AS estado\\nFROM bronze.spl_afiliaciones\\nWHERE afiliacion_id IS NOT NULL\\n  AND TRIM(afiliacion_id) <> \\'\\'',",
+				"     format: 'query') ~> source1",
+				"source1 derive(afiliacion_id = toInteger(afiliacion_id),",
+				"          ci_beneficiaria_normalizado = upper(regexReplace(regexReplace(regexReplace(trim(ci_beneficiaria_normalizado), '-', ''), '\\\\s+', ''), '\\\\.', '')),",
+				"          empleador_id = toInteger(empleador_id),",
+				"          caja_id = toInteger(caja_id),",
+				"          fecha_afiliacion = coalesce(     toDate(fecha_afiliacion, 'yyyy-MM-dd'),     toDate(fecha_afiliacion, 'dd/MM/yyyy'),     toDate(fecha_afiliacion, 'MM/dd/yyyy'),     toDate(fecha_afiliacion, 'dd-MM-yyyy') ),",
+				"          nro_matricula = upper(regexReplace(trim(nro_matricula), '\\\\s+', '')),",
+				"          tipo_subsidio = case(     in(['Prenatal','PRENATAL','prenatal'], tipo_subsidio), 'PRENATAL',     in(['Lactancia','LACTANCIA','lactancia'], tipo_subsidio), 'LACTANCIA',     isNull(tipo_subsidio), 'SIN_TIPO',     upper(trim(tipo_subsidio)) ),",
+				"          estado = case(     in(['Activo','ACTIVO','activo'], estado), 'ACTIVO',     in(['Inactivo','INACTIVO','inactivo'], estado), 'INACTIVO',     in(['Completado','COMPLETADO','completado'], estado), 'COMPLETADO',     isNull(estado), 'SIN_ESTADO',     upper(trim(estado)) ),",
+				"          registro_valido = iif(     isNull(afiliacion_id) ||     isNull(ci_beneficiaria_normalizado) ||     isNull(fecha_afiliacion),     false(),     true() ),",
+				"          observacion_calidad = case(     isNull(afiliacion_id), 'afiliacion_id inválido',     isNull(ci_beneficiaria_normalizado), 'CI beneficiaria inválido',     isNull(fecha_afiliacion), 'fecha_afiliacion inválida',     'OK' )) ~> derivedColumn1"
 			]
 		}
 	}

@@ -6,11 +6,45 @@
 		},
 		"type": "MappingDataFlow",
 		"typeProperties": {
-			"sources": [],
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "bronce_spl_certificados_medicos",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
 			"sinks": [],
-			"transformations": [],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
 			"scriptLines": [
-				""
+				"source(output(",
+				"          certificado_id as string,",
+				"          afiliacion_id as string,",
+				"          fecha_emision as string,",
+				"          semana_gestacion as string,",
+				"          fecha_probable_parto as string,",
+				"          medico_responsable as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT\\n    TRIM(certificado_id) AS certificado_id,\\n    TRIM(afiliacion_id) AS afiliacion_id,\\n    TRIM(fecha_emision) AS fecha_emision,\\n    TRIM(semana_gestacion) AS semana_gestacion,\\n    TRIM(fecha_probable_parto) AS fecha_probable_parto,\\n    TRIM(medico_responsable) AS medico_responsable,\\n    TRIM(estado) AS estado\\nFROM bronze.spl_certificados_medicos\\nWHERE certificado_id IS NOT NULL\\n  AND TRIM(certificado_id) <> \\'\\'',",
+				"     format: 'query') ~> source1",
+				"source1 derive(certificado_id = toInteger(certificado_id),",
+				"          afiliacion_id = toInteger(afiliacion_id),",
+				"          fecha_emision = coalesce(     toDate(fecha_emision, 'yyyy-MM-dd'),     toDate(fecha_emision, 'dd/MM/yyyy'),     toDate(fecha_emision, 'MM/dd/yyyy'),     toDate(fecha_emision, 'dd-MM-yyyy') ),",
+				"          semana_gestacion = iifNull(toInteger(semana_gestacion), 0),",
+				"          fecha_probable_parto = coalesce(     toDate(fecha_probable_parto, 'yyyy-MM-dd'),     toDate(fecha_probable_parto, 'dd/MM/yyyy'),     toDate(fecha_probable_parto, 'MM/dd/yyyy'),     toDate(fecha_probable_parto, 'dd-MM-yyyy') ),",
+				"          medico_responsable = iifNull(initCap(regexReplace(trim(medico_responsable), '\\\\s+', ' ')), 'Sin Medico'),",
+				"          estado = case(     in(['Vigente','VIGENTE','vigente'], estado), 'VIGENTE',     in(['Vencido','VENCIDO','vencido','Vencida','VENCIDA','vencida'], estado), 'VENCIDO',     in(['Anulado','ANULADO','anulado'], estado), 'ANULADO',     isNull(estado), 'SIN_ESTADO',     upper(trim(estado)) ),",
+				"          registro_valido = iif(     isNull(certificado_id) ||     isNull(afiliacion_id),     false(),     true() ),",
+				"          observacion_calidad = case(     isNull(certificado_id), 'certificado_id inválido',     isNull(afiliacion_id), 'afiliacion_id inválido',     'OK' )) ~> derivedColumn1"
 			]
 		}
 	}
