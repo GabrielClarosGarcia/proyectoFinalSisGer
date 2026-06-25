@@ -6,11 +6,50 @@
 		},
 		"type": "MappingDataFlow",
 		"typeProperties": {
-			"sources": [],
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "bronce_bja_controles_prenatales",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
 			"sinks": [],
-			"transformations": [],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
 			"scriptLines": [
-				""
+				"source(output(",
+				"          control_prenatal_id as string,",
+				"          ci_beneficiaria_original as string,",
+				"          ci_beneficiaria_normalizado as string,",
+				"          establecimiento_id as string,",
+				"          nro_control as string,",
+				"          fecha_control as string,",
+				"          semana_gestacion as string,",
+				"          peso_madre_kg as string,",
+				"          presion_arterial as string,",
+				"          resultado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT\\n    TRIM(control_prenatal_id) AS control_prenatal_id,\\n    TRIM(ci_beneficiaria) AS ci_beneficiaria_original,\\n    TRIM(ci_beneficiaria) AS ci_beneficiaria_normalizado,\\n    TRIM(establecimiento_id) AS establecimiento_id,\\n    TRIM(nro_control) AS nro_control,\\n    TRIM(fecha_control) AS fecha_control,\\n    TRIM(semana_gestacion) AS semana_gestacion,\\n    TRIM(peso_madre_kg) AS peso_madre_kg,\\n    TRIM(presion_arterial) AS presion_arterial,\\n    TRIM(resultado) AS resultado\\nFROM bronze.bja_controles_prenatales\\nWHERE control_prenatal_id IS NOT NULL\\n  AND TRIM(control_prenatal_id) <> \\'\\'',",
+				"     format: 'query') ~> source1",
+				"source1 derive(control_prenatal_id = toInteger(control_prenatal_id),",
+				"          ci_beneficiaria_normalizado = upper(regexReplace(regexReplace(regexReplace(trim(ci_beneficiaria_normalizado), '-', ''), '\\\\s+', ''), '\\\\.', '')),",
+				"          establecimiento_id = toInteger(establecimiento_id),",
+				"          nro_control = toInteger(nro_control),",
+				"          fecha_control = coalesce(     toDate(fecha_control, 'yyyy-MM-dd'),     toDate(fecha_control, 'dd/MM/yyyy'),     toDate(fecha_control, 'MM/dd/yyyy'),     toDate(fecha_control, 'dd-MM-yyyy') ),",
+				"          semana_gestacion = iifNull(toInteger(semana_gestacion), 0),",
+				"          peso_madre_kg = toDecimal(regexReplace(toString(peso_madre_kg), '[^0-9.]', '')),",
+				"          presion_arterial = iifNull(upper(regexReplace(trim(presion_arterial), '\\\\s+', '')), 'SIN_DATO'),",
+				"          resultado = case(     in(['Normal','NORMAL','normal'], resultado), 'NORMAL',     in(['Observado','OBSERVADO','observado'], resultado), 'OBSERVADO',     in(['Riesgo','RIESGO','riesgo'], resultado), 'RIESGO',     isNull(resultado), 'SIN_RESULTADO',     upper(trim(resultado)) ),",
+				"          registro_valido = iif(     isNull(control_prenatal_id) ||     isNull(ci_beneficiaria_normalizado) ||     isNull(fecha_control),     false(),     true() ),",
+				"          observacion_calidad = case(     isNull(control_prenatal_id), 'control_prenatal_id inválido',     isNull(ci_beneficiaria_normalizado), 'CI beneficiaria inválido',     isNull(fecha_control), 'fecha_control inválida',     'OK' )) ~> derivedColumn1"
 			]
 		}
 	}

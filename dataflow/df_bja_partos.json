@@ -6,11 +6,49 @@
 		},
 		"type": "MappingDataFlow",
 		"typeProperties": {
-			"sources": [],
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "bronce_bja_partos",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
 			"sinks": [],
-			"transformations": [],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
 			"scriptLines": [
-				""
+				"source(output(",
+				"          parto_id as string,",
+				"          ci_madre_original as string,",
+				"          ci_madre_normalizado as string,",
+				"          ci_recien_nacido_original as string,",
+				"          ci_recien_nacido_normalizado as string,",
+				"          establecimiento_id as string,",
+				"          fecha_parto as string,",
+				"          tipo_parto as string,",
+				"          peso_nacimiento_kg as string,",
+				"          talla_nacimiento_cm as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT\\n    TRIM(parto_id) AS parto_id,\\n    TRIM(ci_madre) AS ci_madre_original,\\n    TRIM(ci_madre) AS ci_madre_normalizado,\\n    TRIM(ci_recien_nacido) AS ci_recien_nacido_original,\\n    TRIM(ci_recien_nacido) AS ci_recien_nacido_normalizado,\\n    TRIM(establecimiento_id) AS establecimiento_id,\\n    TRIM(fecha_parto) AS fecha_parto,\\n    TRIM(tipo_parto) AS tipo_parto,\\n    TRIM(peso_nacimiento_kg) AS peso_nacimiento_kg,\\n    TRIM(talla_nacimiento_cm) AS talla_nacimiento_cm\\nFROM bronze.bja_partos\\nWHERE parto_id IS NOT NULL\\n  AND TRIM(parto_id) <> \\'\\'',",
+				"     format: 'query') ~> source1",
+				"source1 derive(parto_id = toInteger(parto_id),",
+				"          ci_madre_normalizado = upper(regexReplace(regexReplace(regexReplace(trim(ci_madre_normalizado), '-', ''), '\\\\s+', ''), '\\\\.', '')),",
+				"          ci_recien_nacido_normalizado = upper(regexReplace(regexReplace(regexReplace(trim(ci_recien_nacido_normalizado), '-', ''), '\\\\s+', ''), '\\\\.', '')),",
+				"          establecimiento_id = toInteger(establecimiento_id),",
+				"          fecha_parto = coalesce(     toDate(fecha_parto, 'yyyy-MM-dd'),     toDate(fecha_parto, 'dd/MM/yyyy'),     toDate(fecha_parto, 'MM/dd/yyyy'),     toDate(fecha_parto, 'dd-MM-yyyy') ),",
+				"          tipo_parto = case(     in(['Natural','NATURAL','natural','Nautral'], tipo_parto), 'NATURAL',     in(['Cesárea','CESÁREA','cesárea','Cesarea','CESAREA','Cesárae'], tipo_parto), 'CESAREA',     isNull(tipo_parto), 'SIN_DATO',     upper(trim(tipo_parto)) ),",
+				"          peso_nacimiento_kg = toDecimal(regexReplace(toString(peso_nacimiento_kg), '[^0-9.]', '')),",
+				"          talla_nacimiento_cm = toDecimal(regexReplace(toString(talla_nacimiento_cm), '[^0-9.]', '')),",
+				"          registro_valido = iif(     isNull(parto_id) ||     isNull(ci_madre_normalizado) ||     isNull(fecha_parto),     false(),     true() ),",
+				"          observacion_calidad = case(     isNull(parto_id), 'parto_id inválido',     isNull(ci_madre_normalizado), 'CI madre inválido',     isNull(fecha_parto), 'fecha_parto inválida',     'OK' )) ~> derivedColumn1"
 			]
 		}
 	}

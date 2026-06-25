@@ -6,11 +6,53 @@
 		},
 		"type": "MappingDataFlow",
 		"typeProperties": {
-			"sources": [],
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "bronce_bja_controles_pediatricos",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
 			"sinks": [],
-			"transformations": [],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
 			"scriptLines": [
-				""
+				"source(output(",
+				"          control_pediatrico_id as string,",
+				"          ci_nino_original as string,",
+				"          ci_nino_normalizado as string,",
+				"          ci_madre_original as string,",
+				"          ci_madre_normalizado as string,",
+				"          establecimiento_id as string,",
+				"          nro_control as string,",
+				"          fecha_control as string,",
+				"          peso_nino_kg as string,",
+				"          talla_nino_cm as string,",
+				"          vacuna_aplicada as string,",
+				"          resultado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT\\n    TRIM(control_pediatrico_id) AS control_pediatrico_id,\\n    TRIM(ci_nino) AS ci_nino_original,\\n    TRIM(ci_nino) AS ci_nino_normalizado,\\n    TRIM(ci_madre) AS ci_madre_original,\\n    TRIM(ci_madre) AS ci_madre_normalizado,\\n    TRIM(establecimiento_id) AS establecimiento_id,\\n    TRIM(nro_control) AS nro_control,\\n    TRIM(fecha_control) AS fecha_control,\\n    TRIM(peso_nino_kg) AS peso_nino_kg,\\n    TRIM(talla_nino_cm) AS talla_nino_cm,\\n    TRIM(vacuna_aplicada) AS vacuna_aplicada,\\n    TRIM(resultado) AS resultado\\nFROM bronze.bja_controles_pediatricos\\nWHERE control_pediatrico_id IS NOT NULL\\n  AND TRIM(control_pediatrico_id) <> \\'\\'',",
+				"     format: 'query') ~> source1",
+				"source1 derive(control_pediatrico_id = toInteger(control_pediatrico_id),",
+				"          ci_nino_normalizado = upper(regexReplace(regexReplace(regexReplace(trim(ci_nino_normalizado), '-', ''), '\\\\s+', ''), '\\\\.', '')),",
+				"          ci_madre_normalizado = upper(regexReplace(regexReplace(regexReplace(trim(ci_madre_normalizado), '-', ''), '\\\\s+', ''), '\\\\.', '')),",
+				"          establecimiento_id = toInteger(establecimiento_id),",
+				"          nro_control =  toInteger(nro_control),",
+				"          fecha_control = coalesce(     toDate(fecha_control, 'yyyy-MM-dd'),     toDate(fecha_control, 'dd/MM/yyyy'),     toDate(fecha_control, 'MM/dd/yyyy'),     toDate(fecha_control, 'dd-MM-yyyy') ),",
+				"          peso_nino_kg = toDecimal(regexReplace(toString(peso_nino_kg), '[^0-9.]', '')),",
+				"          talla_nino_cm = toDecimal(regexReplace(toString(talla_nino_cm), '[^0-9.]', '')),",
+				"          vacuna_aplicada = iifNull(initCap(regexReplace(trim(vacuna_aplicada), '\\\\s+', ' ')), 'Sin Dato'),",
+				"          resultado = case(     in(['Normal','NORMAL','normal'], resultado), 'NORMAL',     in(['Observado','OBSERVADO','observado'], resultado), 'OBSERVADO',     in(['Riesgo','RIESGO','riesgo'], resultado), 'RIESGO',     isNull(resultado), 'SIN_RESULTADO',     upper(trim(resultado)) ),",
+				"          registro_valido = iif(     isNull(control_pediatrico_id) ||     isNull(ci_madre_normalizado) ||     isNull(fecha_control),     false(),     true() ),",
+				"          observacion_calidad = case(     isNull(control_pediatrico_id), 'control_pediatrico_id inválido',     isNull(ci_madre_normalizado), 'CI madre inválido',     isNull(fecha_control), 'fecha_control inválida',     'OK' )) ~> derivedColumn1"
 			]
 		}
 	}
