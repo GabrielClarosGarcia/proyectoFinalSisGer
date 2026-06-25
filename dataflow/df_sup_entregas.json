@@ -6,11 +6,52 @@
 		},
 		"type": "MappingDataFlow",
 		"typeProperties": {
-			"sources": [],
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "bronce_sup_entregas",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
 			"sinks": [],
-			"transformations": [],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
 			"scriptLines": [
-				""
+				"source(output(",
+				"          entrega_id as string,",
+				"          boleta_id as string,",
+				"          ci_beneficiaria_original as string,",
+				"          ci_beneficiaria_normalizado as string,",
+				"          establecimiento_id as string,",
+				"          paquete_id as string,",
+				"          paquete_nombre as string,",
+				"          fecha_entrega as string,",
+				"          lote_produccion as string,",
+				"          peso_paquete_kg as string,",
+				"          fecha_proxima_entrega as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT\\n    TRIM(entrega_id) AS entrega_id,\\n    TRIM(boleta_id) AS boleta_id,\\n    TRIM(ci_beneficiaria) AS ci_beneficiaria_original,\\n    TRIM(ci_beneficiaria) AS ci_beneficiaria_normalizado,\\n    TRIM(establecimiento_id) AS establecimiento_id,\\n    TRIM(paquete_id) AS paquete_id,\\n    TRIM(paquete_nombre) AS paquete_nombre,\\n    TRIM(fecha_entrega) AS fecha_entrega,\\n    TRIM(lote_produccion) AS lote_produccion,\\n    TRIM(peso_paquete_kg) AS peso_paquete_kg,\\n    TRIM(fecha_proxima_entrega) AS fecha_proxima_entrega\\nFROM bronze.sup_entregas\\nWHERE entrega_id IS NOT NULL\\n  AND TRIM(entrega_id) <> \\'\\'',",
+				"     format: 'query') ~> source1",
+				"source1 derive(entrega_id = toInteger(entrega_id),",
+				"          boleta_id = toInteger(boleta_id),",
+				"          ci_beneficiaria_normalizado = upper(regexReplace(regexReplace(regexReplace(trim(ci_beneficiaria_normalizado), '-', ''), '\\\\s+', ''), '\\\\.', '')),",
+				"          establecimiento_id = toInteger(establecimiento_id),",
+				"          paquete_id = toInteger(paquete_id),",
+				"          paquete_nombre = initCap(regexReplace(trim(paquete_nombre), '\\\\s+', ' ')),",
+				"          fecha_entrega = coalesce(     toDate(fecha_entrega, 'yyyy-MM-dd'),     toDate(fecha_entrega, 'dd/MM/yyyy'),     toDate(fecha_entrega, 'MM/dd/yyyy'),     toDate(fecha_entrega, 'dd-MM-yyyy') ),",
+				"          lote_produccion = iifNull(upper(regexReplace(trim(lote_produccion), '\\\\s+', '')), 'SIN_LOTE'),",
+				"          peso_paquete_kg = toDecimal(regexReplace(toString(peso_paquete_kg), '[^0-9.]', '')),",
+				"          fecha_proxima_entrega = coalesce(     toDate(fecha_proxima_entrega, 'yyyy-MM-dd'),     toDate(fecha_proxima_entrega, 'dd/MM/yyyy'),     toDate(fecha_proxima_entrega, 'MM/dd/yyyy'),     toDate(fecha_proxima_entrega, 'dd-MM-yyyy') ),",
+				"          registro_valido = iif(     isNull(entrega_id) ||     isNull(boleta_id) ||     isNull(ci_beneficiaria_normalizado) ||     isNull(fecha_entrega),     false(),     true() ),",
+				"          observacion_calidad = case(     isNull(entrega_id), 'entrega_id inválido',     isNull(boleta_id), 'boleta_id inválido',     isNull(ci_beneficiaria_normalizado), 'CI beneficiaria inválido',     isNull(fecha_entrega), 'fecha_entrega inválida',     'OK' )) ~> derivedColumn1"
 			]
 		}
 	}

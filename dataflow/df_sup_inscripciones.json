@@ -6,11 +6,44 @@
 		},
 		"type": "MappingDataFlow",
 		"typeProperties": {
-			"sources": [],
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "bronce_sup_inscripciones",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
 			"sinks": [],
-			"transformations": [],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
 			"scriptLines": [
-				""
+				"source(output(",
+				"          inscripcion_id as string,",
+				"          ci_beneficiaria_original as string,",
+				"          ci_beneficiaria_normalizado as string,",
+				"          establecimiento_id as string,",
+				"          fecha_inscripcion as string,",
+				"          semana_gestacion as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT\\n    TRIM(inscripcion_id) AS inscripcion_id,\\n    TRIM(ci_beneficiaria) AS ci_beneficiaria_original,\\n    TRIM(ci_beneficiaria) AS ci_beneficiaria_normalizado,\\n    TRIM(establecimiento_id) AS establecimiento_id,\\n    TRIM(fecha_inscripcion) AS fecha_inscripcion,\\n    TRIM(semana_gestacion) AS semana_gestacion,\\n    TRIM(estado) AS estado\\nFROM bronze.sup_inscripciones\\nWHERE inscripcion_id IS NOT NULL\\n  AND TRIM(inscripcion_id) <> \\'\\'',",
+				"     format: 'query') ~> source1",
+				"source1 derive(inscripcion_id = toInteger(inscripcion_id),",
+				"          ci_beneficiaria_normalizado = upper(regexReplace(regexReplace(regexReplace(trim(ci_beneficiaria_normalizado), '-', ''), '\\\\s+', ''), '\\\\.', '')),",
+				"          establecimiento_id = toInteger(establecimiento_id),",
+				"          fecha_inscripcion = coalesce(     toDate(fecha_inscripcion, 'yyyy-MM-dd'),     toDate(fecha_inscripcion, 'dd/MM/yyyy'),     toDate(fecha_inscripcion, 'MM/dd/yyyy'),     toDate(fecha_inscripcion, 'dd-MM-yyyy') ),",
+				"          semana_gestacion = toInteger(semana_gestacion),",
+				"          estado = case(     in(['Activo','ACTIVO','activo'], estado), 'ACTIVO',     in(['Inactivo','INACTIVO','inactivo'], estado), 'INACTIVO',     in(['Completado','COMPLETADO','completado'], estado), 'COMPLETADO',     isNull(estado), 'SIN_ESTADO',     upper(trim(estado)) ),",
+				"          registro_valido = iif(     isNull(inscripcion_id) ||     isNull(ci_beneficiaria_normalizado) ||     isNull(fecha_inscripcion),     false(),     true() ),",
+				"          observacion_calidad = case(     isNull(inscripcion_id), 'inscripcion_id inválido',     isNull(ci_beneficiaria_normalizado), 'CI beneficiaria inválido',     isNull(fecha_inscripcion), 'fecha_inscripcion inválida',     'OK' )) ~> derivedColumn1"
 			]
 		}
 	}
