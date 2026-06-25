@@ -1,0 +1,43 @@
+{
+	"name": "df_silver_as_almacenes",
+	"properties": {
+		"folder": {
+			"name": "silver/AS"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "bronce_as_almacenes",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          almacen_id as string,",
+				"          nombre as string,",
+				"          municipio as string,",
+				"          departamento as string,",
+				"          direccion as string,",
+				"          capacidad_m3 as string,",
+				"          estado as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT\\n    TRIM(almacen_id) AS almacen_id,\\n    TRIM(nombre) AS nombre,\\n    TRIM(municipio) AS municipio,\\n    TRIM(departamento) AS departamento,\\n    TRIM(direccion) AS direccion,\\n    TRIM(capacidad_m3) AS capacidad_m3,\\n    TRIM(estado) AS estado\\nFROM bronze.as_almacenes\\nWHERE almacen_id IS NOT NULL \\n  AND TRIM(almacen_id) <> \\'\\'',",
+				"     format: 'query') ~> source1",
+				"source1 derive() ~> derivedColumn1"
+			]
+		}
+	}
+}

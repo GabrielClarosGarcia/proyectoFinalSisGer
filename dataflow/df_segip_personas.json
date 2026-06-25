@@ -1,0 +1,17 @@
+{
+	"name": "df_segip_personas",
+	"properties": {
+		"folder": {
+			"name": "silver/SEGIP"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [],
+			"sinks": [],
+			"transformations": [],
+			"scriptLines": [
+				""
+			]
+		}
+	}
+}

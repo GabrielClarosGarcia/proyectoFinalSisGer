@@ -1,0 +1,17 @@
+{
+	"name": "df_sup_controles",
+	"properties": {
+		"folder": {
+			"name": "silver/SUP"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [],
+			"sinks": [],
+			"transformations": [],
+			"scriptLines": [
+				""
+			]
+		}
+	}
+}

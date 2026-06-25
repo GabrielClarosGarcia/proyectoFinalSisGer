@@ -1,0 +1,17 @@
+{
+	"name": "df_spl_afiliaciones",
+	"properties": {
+		"folder": {
+			"name": "silver/SPL"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [],
+			"sinks": [],
+			"transformations": [],
+			"scriptLines": [
+				""
+			]
+		}
+	}
+}

@@ -1,0 +1,17 @@
+{
+	"name": "df_spl_asignaciones_mensuales",
+	"properties": {
+		"folder": {
+			"name": "silver/SPL"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [],
+			"sinks": [],
+			"transformations": [],
+			"scriptLines": [
+				""
+			]
+		}
+	}
+}

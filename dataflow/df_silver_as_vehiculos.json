@@ -1,0 +1,17 @@
+{
+	"name": "df_silver_as_vehiculos",
+	"properties": {
+		"folder": {
+			"name": "silver/AS"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [],
+			"sinks": [],
+			"transformations": [],
+			"scriptLines": [
+				""
+			]
+		}
+	}
+}

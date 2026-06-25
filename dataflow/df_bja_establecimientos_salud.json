@@ -1,0 +1,17 @@
+{
+	"name": "df_bja_establecimientos_salud",
+	"properties": {
+		"folder": {
+			"name": "silver/BJA"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [],
+			"sinks": [],
+			"transformations": [],
+			"scriptLines": [
+				""
+			]
+		}
+	}
+}
