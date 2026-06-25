@@ -1,16 +1,73 @@
 {
-	"name": "df_silver_as_transportistas",
+	"name": "df_silver_as_despachos",
 	"properties": {
 		"folder": {
 			"name": "silver/AS"
 		},
 		"type": "MappingDataFlow",
 		"typeProperties": {
-			"sources": [],
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "bronce_as_despachos",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
 			"sinks": [],
-			"transformations": [],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
 			"scriptLines": [
-				""
+				"source(output(",
+				"          despacho_id as string,",
+				"          recepcion_id as string,",
+				"          nro_lote as string,",
+				"          almacen_id as string,",
+				"          transportista_id as string,",
+				"          vehiculo_id as string,",
+				"          fecha_despacho as string,",
+				"          cantidad_despachada as string,",
+				"          centro_destino as string,",
+				"          estado as string,",
+				"          responsable as string,",
+				"          nro_guia_despacho as string,",
+				"          fecha_llegada as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT\\n    TRIM(despacho_id) AS despacho_id,\\n    TRIM(recepcion_id) AS recepcion_id,\\n    TRIM(nro_lote) AS nro_lote,\\n    TRIM(almacen_id) AS almacen_id,\\n    TRIM(transportista_id) AS transportista_id,\\n    TRIM(vehiculo_id) AS vehiculo_id,\\n    TRIM(fecha_despacho) AS fecha_despacho,\\n    TRIM(cantidad_despachada) AS cantidad_despachada,\\n    TRIM(centro_destino) AS centro_destino,\\n    TRIM(estado) AS estado,\\n    TRIM(responsable) AS responsable,\\n    TRIM(nro_guia_despacho) AS nro_guia_despacho,\\n    TRIM(fecha_llegada) AS fecha_llegada\\nFROM bronze.as_despachos\\nWHERE despacho_id IS NOT NULL \\n  AND TRIM(despacho_id) <> \\'\\'',",
+				"     format: 'query') ~> source1",
+				"source1 derive(despacho_id = toInteger(despacho_id),",
+				"          recepcion_id = toInteger(recepcion_id),",
+				"          nro_lote = iifNull(upper(regexReplace(trim(nro_lote), '\\\\s+', '')), 'SIN_LOTE'),",
+				"          almacen_id = toInteger(almacen_id),",
+				"          transportista_id = toInteger(transportista_id),",
+				"          vehiculo_id = toInteger(vehiculo_id),",
+				"          fecha_despacho = coalesce(     toDate(fecha_despacho, 'yyyy-MM-dd'),     toDate(fecha_despacho, 'dd/MM/yyyy'),     toDate(fecha_despacho, 'MM/dd/yyyy'),     toDate(fecha_despacho, 'dd-MM-yyyy') ),",
+				"          cantidad_despachada = toDecimal(regexReplace(toString(cantidad_despachada), '[^0-9.]', '')),",
+				"          centro_destino = iifNull(initCap(regexReplace(trim(centro_destino), '\\\\s+', ' ')), 'Sin Destino'),",
+				"          estado = case(     in(['Despachado','DESPACHADO','despachado','Deespachado','Despahado','Depachado','Despaachado','Despachdao'], estado), 'DESPACHADO',     in(['Devuelto','DEVUELTO','devuelto'], estado), 'DEVUELTO',     isNull(estado), 'SIN_ESTADO',     upper(trim(estado)) ),",
+				"          responsable = iifNull(initCap(regexReplace(trim(responsable), '\\\\s+', ' ')), 'Sin Responsable'),",
+				"          nro_guia_despacho = iifNull(upper(regexReplace(trim(nro_guia_despacho), '\\\\s+', '')), 'SIN_GUIA'),",
+				"          fecha_llegada = coalesce(     toDate(fecha_llegada, 'yyyy-MM-dd'),     toDate(fecha_llegada, 'dd/MM/yyyy'),     toDate(fecha_llegada, 'MM/dd/yyyy'),     toDate(fecha_llegada, 'dd-MM-yyyy') ),",
+				"          dias_transito = iif(",
+				"    isNull(fecha_despacho) || isNull(fecha_llegada),",
+				"    toInteger(null()),",
+				"    toInteger(",
+				"        (",
+				"            toTimestamp(toString(fecha_llegada) + ' 00:00:00', 'yyyy-MM-dd HH:mm:ss')",
+				"            -",
+				"            toTimestamp(toString(fecha_despacho) + ' 00:00:00', 'yyyy-MM-dd HH:mm:ss')",
+				"        ) / days(1)",
+				"    )",
+				"),",
+				"          registro_valido = iif(     isNull(despacho_id) ||      isNull(fecha_despacho) ||      isNull(cantidad_despachada),     false(),     true() ),",
+				"          observacion_calidad = case(     isNull(despacho_id), 'despacho_id inválido',     isNull(fecha_despacho), 'fecha_despacho inválida',     isNull(cantidad_despachada), 'cantidad_despachada inválida',     'OK' )) ~> derivedColumn1"
 			]
 		}
 	}

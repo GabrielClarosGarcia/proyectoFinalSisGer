@@ -6,11 +6,57 @@
 		},
 		"type": "MappingDataFlow",
 		"typeProperties": {
-			"sources": [],
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "bronce_as_recepciones",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
 			"sinks": [],
-			"transformations": [],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
 			"scriptLines": [
-				""
+				"source(output(",
+				"          recepcion_id as string,",
+				"          nro_lote as string,",
+				"          almacen_id as string,",
+				"          transportista_id as string,",
+				"          vehiculo_id as string,",
+				"          fecha_recepcion as string,",
+				"          cantidad_recibida as string,",
+				"          unidad as string,",
+				"          condicion as string,",
+				"          estado as string,",
+				"          responsable as string,",
+				"          nro_guia_remision as string,",
+				"          temperatura_llegada as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT\\n    TRIM(recepcion_id) AS recepcion_id,\\n    TRIM(nro_lote) AS nro_lote,\\n    TRIM(almacen_id) AS almacen_id,\\n    TRIM(transportista_id) AS transportista_id,\\n    TRIM(vehiculo_id) AS vehiculo_id,\\n    TRIM(fecha_recepcion) AS fecha_recepcion,\\n    TRIM(cantidad_recibida) AS cantidad_recibida,\\n    TRIM(unidad) AS unidad,\\n    TRIM(condicion) AS condicion,\\n    TRIM(estado) AS estado,\\n    TRIM(responsable) AS responsable,\\n    TRIM(nro_guia_remision) AS nro_guia_remision,\\n    TRIM(temperatura_llegada) AS temperatura_llegada\\nFROM bronze.as_recepciones\\nWHERE recepcion_id IS NOT NULL \\n  AND TRIM(recepcion_id) <> \\'\\'',",
+				"     format: 'query') ~> source1",
+				"source1 derive(recepcion_id = toInteger(recepcion_id),",
+				"          nro_lote = iifNull(upper(regexReplace(trim(nro_lote), '\\\\s+', '')), 'SIN_LOTE'),",
+				"          almacen_id = toInteger(almacen_id),",
+				"          transportista_id = toInteger(transportista_id),",
+				"          vehiculo_id = toInteger(vehiculo_id),",
+				"          fecha_recepcion = coalesce(     toDate(fecha_recepcion, 'yyyy-MM-dd'),     toDate(fecha_recepcion, 'dd/MM/yyyy'),     toDate(fecha_recepcion, 'MM/dd/yyyy'),     toDate(fecha_recepcion, 'dd-MM-yyyy') ),",
+				"          cantidad_recibida = toDecimal(regexReplace(toString(cantidad_recibida), '[^0-9.]', '')),",
+				"          unidad = case(     in(['kg','KG','Kg'], unidad), 'KG',     in(['cajas','CAJAS','Cajas'], unidad), 'CAJAS',     in(['litros','LITROS','Litros'], unidad), 'LITROS',     in(['paquetes','PAQUETES','Paquetes'], unidad), 'PAQUETES',     in(['unidades','UNIDADES','Unidades'], unidad), 'UNIDADES',     upper(trim(unidad)) ),",
+				"          condicion = iifNull(initCap(regexReplace(trim(condicion), '\\\\s+', ' ')), 'Sin Condicion'),",
+				"          estado = case(     in(['Recibido','RECIBIDO','recibido'], estado), 'RECIBIDO',     in(['Devuelto','DEVUELTO','devuelto'], estado), 'DEVUELTO',     isNull(estado), 'SIN_ESTADO',     upper(trim(estado)) ),",
+				"          responsable = iifNull(initCap(regexReplace(trim(responsable), '\\\\s+', ' ')), 'Sin Responsable'),",
+				"          nro_guia_remision = iifNull(upper(regexReplace(trim(nro_guia_remision), '\\\\s+', '')), 'SIN_GUIA'),",
+				"          temperatura_llegada = toDecimal(regexReplace(toString(temperatura_llegada), '[^0-9.-]', '')),",
+				"          registro_valido = iif(     isNull(recepcion_id) ||      isNull(fecha_recepcion) ||      isNull(cantidad_recibida),     false(),     true() ),",
+				"          observacion_calidad = case(     isNull(recepcion_id), 'recepcion_id inválido',     isNull(fecha_recepcion), 'fecha_recepcion inválida',     isNull(cantidad_recibida), 'cantidad_recibida inválida',     'OK' )) ~> derivedColumn1"
 			]
 		}
 	}
