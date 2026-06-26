@@ -1,0 +1,58 @@
+{
+	"name": "silver_spl_supermercados",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dw_beneficiarios",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "silver/SPL"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "supermercado_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "cadena",
+				"type": "varchar"
+			},
+			{
+				"name": "sucursal",
+				"type": "varchar"
+			},
+			{
+				"name": "municipio",
+				"type": "varchar"
+			},
+			{
+				"name": "direccion",
+				"type": "varchar"
+			},
+			{
+				"name": "estado",
+				"type": "varchar"
+			},
+			{
+				"name": "registro_valido",
+				"type": "bit"
+			},
+			{
+				"name": "observacion_calidad",
+				"type": "varchar"
+			},
+			{
+				"name": "fecha_carga",
+				"type": "datetime2",
+				"scale": 7
+			}
+		],
+		"typeProperties": {
+			"schema": "silver",
+			"table": "spl_supermercados"
+		}
+	}
+}

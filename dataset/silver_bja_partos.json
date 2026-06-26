@@ -1,0 +1,79 @@
+{
+	"name": "silver_bja_partos",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dw_beneficiarios",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "silver/BJA"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "parto_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "ci_madre_original",
+				"type": "varchar"
+			},
+			{
+				"name": "ci_madre_normalizado",
+				"type": "varchar"
+			},
+			{
+				"name": "ci_recien_nacido_original",
+				"type": "varchar"
+			},
+			{
+				"name": "ci_recien_nacido_normalizado",
+				"type": "varchar"
+			},
+			{
+				"name": "establecimiento_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "fecha_parto",
+				"type": "date"
+			},
+			{
+				"name": "tipo_parto",
+				"type": "varchar"
+			},
+			{
+				"name": "peso_nacimiento_kg",
+				"type": "decimal",
+				"precision": 10,
+				"scale": 2
+			},
+			{
+				"name": "talla_nacimiento_cm",
+				"type": "decimal",
+				"precision": 10,
+				"scale": 2
+			},
+			{
+				"name": "registro_valido",
+				"type": "bit"
+			},
+			{
+				"name": "observacion_calidad",
+				"type": "varchar"
+			},
+			{
+				"name": "fecha_carga",
+				"type": "datetime2",
+				"scale": 7
+			}
+		],
+		"typeProperties": {
+			"schema": "silver",
+			"table": "bja_partos"
+		}
+	}
+}

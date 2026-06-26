@@ -15,7 +15,15 @@
 					"name": "source1"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "silver_bja_controles_pediatricos",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
 			"transformations": [
 				{
 					"name": "derivedColumn1"
@@ -45,14 +53,57 @@
 				"          ci_nino_normalizado = upper(regexReplace(regexReplace(regexReplace(trim(ci_nino_normalizado), '-', ''), '\\\\s+', ''), '\\\\.', '')),",
 				"          ci_madre_normalizado = upper(regexReplace(regexReplace(regexReplace(trim(ci_madre_normalizado), '-', ''), '\\\\s+', ''), '\\\\.', '')),",
 				"          establecimiento_id = toInteger(establecimiento_id),",
-				"          nro_control =  toInteger(nro_control),",
+				"          nro_control = toInteger(nro_control),",
 				"          fecha_control = coalesce(     toDate(fecha_control, 'yyyy-MM-dd'),     toDate(fecha_control, 'dd/MM/yyyy'),     toDate(fecha_control, 'MM/dd/yyyy'),     toDate(fecha_control, 'dd-MM-yyyy') ),",
 				"          peso_nino_kg = toDecimal(regexReplace(toString(peso_nino_kg), '[^0-9.]', '')),",
 				"          talla_nino_cm = toDecimal(regexReplace(toString(talla_nino_cm), '[^0-9.]', '')),",
 				"          vacuna_aplicada = iifNull(initCap(regexReplace(trim(vacuna_aplicada), '\\\\s+', ' ')), 'Sin Dato'),",
 				"          resultado = case(     in(['Normal','NORMAL','normal'], resultado), 'NORMAL',     in(['Observado','OBSERVADO','observado'], resultado), 'OBSERVADO',     in(['Riesgo','RIESGO','riesgo'], resultado), 'RIESGO',     isNull(resultado), 'SIN_RESULTADO',     upper(trim(resultado)) ),",
 				"          registro_valido = iif(     isNull(control_pediatrico_id) ||     isNull(ci_madre_normalizado) ||     isNull(fecha_control),     false(),     true() ),",
-				"          observacion_calidad = case(     isNull(control_pediatrico_id), 'control_pediatrico_id inválido',     isNull(ci_madre_normalizado), 'CI madre inválido',     isNull(fecha_control), 'fecha_control inválida',     'OK' )) ~> derivedColumn1"
+				"          observacion_calidad = case(     isNull(control_pediatrico_id), 'control_pediatrico_id inválido',     isNull(ci_madre_normalizado), 'CI madre inválido',     isNull(fecha_control), 'fecha_control inválida',     'OK' )) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          control_pediatrico_id as integer,",
+				"          ci_nino_original as string,",
+				"          ci_nino_normalizado as string,",
+				"          ci_madre_original as string,",
+				"          ci_madre_normalizado as string,",
+				"          establecimiento_id as integer,",
+				"          nro_control as integer,",
+				"          fecha_control as date,",
+				"          peso_nino_kg as decimal(10,2),",
+				"          talla_nino_cm as decimal(10,2),",
+				"          vacuna_aplicada as string,",
+				"          resultado as string,",
+				"          registro_valido as boolean,",
+				"          observacion_calidad as string,",
+				"          fecha_carga as timestamp",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          control_pediatrico_id,",
+				"          ci_nino_original,",
+				"          ci_nino_normalizado,",
+				"          ci_madre_original,",
+				"          ci_madre_normalizado,",
+				"          establecimiento_id,",
+				"          nro_control,",
+				"          fecha_control,",
+				"          peso_nino_kg,",
+				"          talla_nino_cm,",
+				"          vacuna_aplicada,",
+				"          resultado,",
+				"          registro_valido,",
+				"          observacion_calidad",
+				"     )) ~> sink1"
 			]
 		}
 	}

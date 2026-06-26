@@ -15,7 +15,15 @@
 					"name": "source1"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "silver_spl_afiliaciones",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
 			"transformations": [
 				{
 					"name": "derivedColumn1"
@@ -47,7 +55,44 @@
 				"          tipo_subsidio = case(     in(['Prenatal','PRENATAL','prenatal'], tipo_subsidio), 'PRENATAL',     in(['Lactancia','LACTANCIA','lactancia'], tipo_subsidio), 'LACTANCIA',     isNull(tipo_subsidio), 'SIN_TIPO',     upper(trim(tipo_subsidio)) ),",
 				"          estado = case(     in(['Activo','ACTIVO','activo'], estado), 'ACTIVO',     in(['Inactivo','INACTIVO','inactivo'], estado), 'INACTIVO',     in(['Completado','COMPLETADO','completado'], estado), 'COMPLETADO',     isNull(estado), 'SIN_ESTADO',     upper(trim(estado)) ),",
 				"          registro_valido = iif(     isNull(afiliacion_id) ||     isNull(ci_beneficiaria_normalizado) ||     isNull(fecha_afiliacion),     false(),     true() ),",
-				"          observacion_calidad = case(     isNull(afiliacion_id), 'afiliacion_id inválido',     isNull(ci_beneficiaria_normalizado), 'CI beneficiaria inválido',     isNull(fecha_afiliacion), 'fecha_afiliacion inválida',     'OK' )) ~> derivedColumn1"
+				"          observacion_calidad = case(     isNull(afiliacion_id), 'afiliacion_id inválido',     isNull(ci_beneficiaria_normalizado), 'CI beneficiaria inválido',     isNull(fecha_afiliacion), 'fecha_afiliacion inválida',     'OK' )) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          afiliacion_id as integer,",
+				"          ci_beneficiaria_original as string,",
+				"          ci_beneficiaria_normalizado as string,",
+				"          empleador_id as integer,",
+				"          caja_id as integer,",
+				"          fecha_afiliacion as date,",
+				"          nro_matricula as string,",
+				"          tipo_subsidio as string,",
+				"          estado as string,",
+				"          registro_valido as boolean,",
+				"          observacion_calidad as string,",
+				"          fecha_carga as timestamp",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          afiliacion_id,",
+				"          ci_beneficiaria_original,",
+				"          ci_beneficiaria_normalizado,",
+				"          empleador_id,",
+				"          caja_id,",
+				"          fecha_afiliacion,",
+				"          nro_matricula,",
+				"          tipo_subsidio,",
+				"          estado,",
+				"          registro_valido,",
+				"          observacion_calidad",
+				"     )) ~> sink1"
 			]
 		}
 	}

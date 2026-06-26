@@ -1,0 +1,75 @@
+{
+	"name": "silver_sup_controles",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dw_beneficiarios",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "silver/SUP"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "control_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "ci_beneficiaria_original",
+				"type": "varchar"
+			},
+			{
+				"name": "ci_beneficiaria_normalizado",
+				"type": "varchar"
+			},
+			{
+				"name": "establecimiento_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "nro_control",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "fecha_control",
+				"type": "date"
+			},
+			{
+				"name": "semana_gestacion",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "peso_madre_kg",
+				"type": "decimal",
+				"precision": 10,
+				"scale": 2
+			},
+			{
+				"name": "presion_arterial",
+				"type": "varchar"
+			},
+			{
+				"name": "registro_valido",
+				"type": "bit"
+			},
+			{
+				"name": "observacion_calidad",
+				"type": "varchar"
+			},
+			{
+				"name": "fecha_carga",
+				"type": "datetime2",
+				"scale": 7
+			}
+		],
+		"typeProperties": {
+			"schema": "silver",
+			"table": "sup_controles"
+		}
+	}
+}

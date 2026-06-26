@@ -15,7 +15,15 @@
 					"name": "source1"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "silver_sup_boletas",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
 			"transformations": [
 				{
 					"name": "derivedColumn1"
@@ -43,7 +51,40 @@
 				"          fecha_emision = coalesce(     toDate(fecha_emision, 'yyyy-MM-dd'),     toDate(fecha_emision, 'dd/MM/yyyy'),     toDate(fecha_emision, 'MM/dd/yyyy'),     toDate(fecha_emision, 'dd-MM-yyyy') ),",
 				"          estado = case(     in(['Vigente','VIGENTE','vigente'], estado), 'VIGENTE',     in(['Vencida','VENCIDA','vencida'], estado), 'VENCIDA',     in(['Consumida','CONSUMIDA','consumida'], estado), 'CONSUMIDA',     in(['Anulada','ANULADA','anulada'], estado), 'ANULADA',     isNull(estado), 'SIN_ESTADO',     upper(trim(estado)) ),",
 				"          registro_valido = iif(     isNull(boleta_id) ||     isNull(control_id) ||     isNull(ci_beneficiaria_normalizado),     false(),     true() ),",
-				"          observacion_calidad = case(     isNull(boleta_id), 'boleta_id inválido',     isNull(control_id), 'control_id inválido',     isNull(ci_beneficiaria_normalizado), 'CI beneficiaria inválido',     'OK' )) ~> derivedColumn1"
+				"          observacion_calidad = case(     isNull(boleta_id), 'boleta_id inválido',     isNull(control_id), 'control_id inválido',     isNull(ci_beneficiaria_normalizado), 'CI beneficiaria inválido',     'OK' )) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          boleta_id as integer,",
+				"          control_id as integer,",
+				"          ci_beneficiaria_original as string,",
+				"          ci_beneficiaria_normalizado as string,",
+				"          nro_boleta as string,",
+				"          fecha_emision as date,",
+				"          estado as string,",
+				"          registro_valido as boolean,",
+				"          observacion_calidad as string,",
+				"          fecha_carga as timestamp",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          boleta_id,",
+				"          control_id,",
+				"          ci_beneficiaria_original,",
+				"          ci_beneficiaria_normalizado,",
+				"          nro_boleta,",
+				"          fecha_emision,",
+				"          estado,",
+				"          registro_valido,",
+				"          observacion_calidad",
+				"     )) ~> sink1"
 			]
 		}
 	}

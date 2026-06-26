@@ -15,7 +15,15 @@
 					"name": "source1"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "silver_spl_certificados_medicos",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
 			"transformations": [
 				{
 					"name": "derivedColumn1"
@@ -44,7 +52,40 @@
 				"          medico_responsable = iifNull(initCap(regexReplace(trim(medico_responsable), '\\\\s+', ' ')), 'Sin Medico'),",
 				"          estado = case(     in(['Vigente','VIGENTE','vigente'], estado), 'VIGENTE',     in(['Vencido','VENCIDO','vencido','Vencida','VENCIDA','vencida'], estado), 'VENCIDO',     in(['Anulado','ANULADO','anulado'], estado), 'ANULADO',     isNull(estado), 'SIN_ESTADO',     upper(trim(estado)) ),",
 				"          registro_valido = iif(     isNull(certificado_id) ||     isNull(afiliacion_id),     false(),     true() ),",
-				"          observacion_calidad = case(     isNull(certificado_id), 'certificado_id inválido',     isNull(afiliacion_id), 'afiliacion_id inválido',     'OK' )) ~> derivedColumn1"
+				"          observacion_calidad = case(     isNull(certificado_id), 'certificado_id inválido',     isNull(afiliacion_id), 'afiliacion_id inválido',     'OK' )) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          certificado_id as integer,",
+				"          afiliacion_id as integer,",
+				"          fecha_emision as date,",
+				"          semana_gestacion as integer,",
+				"          fecha_probable_parto as date,",
+				"          medico_responsable as string,",
+				"          estado as string,",
+				"          registro_valido as boolean,",
+				"          observacion_calidad as string,",
+				"          fecha_carga as timestamp",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          certificado_id,",
+				"          afiliacion_id,",
+				"          fecha_emision,",
+				"          semana_gestacion,",
+				"          fecha_probable_parto,",
+				"          medico_responsable,",
+				"          estado,",
+				"          registro_valido,",
+				"          observacion_calidad",
+				"     )) ~> sink1"
 			]
 		}
 	}

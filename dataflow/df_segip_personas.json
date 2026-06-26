@@ -15,7 +15,15 @@
 					"name": "source1"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "silver_segip_personas",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
 			"transformations": [
 				{
 					"name": "derivedColumn1"
@@ -61,7 +69,58 @@
 				"          municipio_residencia = iifNull(initCap(regexReplace(trim(municipio_residencia), '\\\\s+', ' ')), 'Sin Municipio'),",
 				"          fecha_emision = coalesce(     toDate(fecha_emision, 'yyyy-MM-dd'),     toDate(fecha_emision, 'dd/MM/yyyy'),     toDate(fecha_emision, 'MM/dd/yyyy'),     toDate(fecha_emision, 'dd-MM-yyyy') ),",
 				"          registro_valido = iif(isNull(ci_normalizado), false(), true()),",
-				"          observacion_calidad = iif(isNull(ci_normalizado), 'CI inválido', 'OK')) ~> derivedColumn1"
+				"          observacion_calidad = iif(isNull(ci_normalizado), 'CI inválido', 'OK')) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          ci_original as string,",
+				"          ci_normalizado as string,",
+				"          nombres as string,",
+				"          apellido_paterno as string,",
+				"          apellido_materno as string,",
+				"          fecha_nacimiento as date,",
+				"          genero as string,",
+				"          estado_civil as string,",
+				"          ci_conyuge_normalizado as string,",
+				"          numero_hijos as integer,",
+				"          ci_padre_normalizado as string,",
+				"          ci_madre_normalizado as string,",
+				"          profesion as string,",
+				"          nivel_estudios as string,",
+				"          municipio_residencia as string,",
+				"          fecha_emision as date,",
+				"          registro_valido as boolean,",
+				"          observacion_calidad as string,",
+				"          fecha_carga as timestamp",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          ci_original,",
+				"          ci_normalizado,",
+				"          nombres,",
+				"          apellido_paterno,",
+				"          apellido_materno,",
+				"          fecha_nacimiento,",
+				"          genero,",
+				"          estado_civil,",
+				"          ci_conyuge_normalizado,",
+				"          numero_hijos,",
+				"          ci_padre_normalizado,",
+				"          ci_madre_normalizado,",
+				"          profesion,",
+				"          nivel_estudios,",
+				"          municipio_residencia,",
+				"          fecha_emision,",
+				"          registro_valido,",
+				"          observacion_calidad",
+				"     )) ~> sink1"
 			]
 		}
 	}

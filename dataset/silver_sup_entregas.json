@@ -1,0 +1,83 @@
+{
+	"name": "silver_sup_entregas",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dw_beneficiarios",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "silver/SUP"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "entrega_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "boleta_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "ci_beneficiaria_original",
+				"type": "varchar"
+			},
+			{
+				"name": "ci_beneficiaria_normalizado",
+				"type": "varchar"
+			},
+			{
+				"name": "establecimiento_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "paquete_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "paquete_nombre",
+				"type": "varchar"
+			},
+			{
+				"name": "fecha_entrega",
+				"type": "date"
+			},
+			{
+				"name": "lote_produccion",
+				"type": "varchar"
+			},
+			{
+				"name": "peso_paquete_kg",
+				"type": "decimal",
+				"precision": 10,
+				"scale": 2
+			},
+			{
+				"name": "fecha_proxima_entrega",
+				"type": "date"
+			},
+			{
+				"name": "registro_valido",
+				"type": "bit"
+			},
+			{
+				"name": "observacion_calidad",
+				"type": "varchar"
+			},
+			{
+				"name": "fecha_carga",
+				"type": "datetime2",
+				"scale": 7
+			}
+		],
+		"typeProperties": {
+			"schema": "silver",
+			"table": "sup_entregas"
+		}
+	}
+}

@@ -1,0 +1,72 @@
+{
+	"name": "silver_spl_afiliaciones",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dw_beneficiarios",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "silver/SPL"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "afiliacion_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "ci_beneficiaria_original",
+				"type": "varchar"
+			},
+			{
+				"name": "ci_beneficiaria_normalizado",
+				"type": "varchar"
+			},
+			{
+				"name": "empleador_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "caja_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "fecha_afiliacion",
+				"type": "date"
+			},
+			{
+				"name": "nro_matricula",
+				"type": "varchar"
+			},
+			{
+				"name": "tipo_subsidio",
+				"type": "varchar"
+			},
+			{
+				"name": "estado",
+				"type": "varchar"
+			},
+			{
+				"name": "registro_valido",
+				"type": "bit"
+			},
+			{
+				"name": "observacion_calidad",
+				"type": "varchar"
+			},
+			{
+				"name": "fecha_carga",
+				"type": "datetime2",
+				"scale": 7
+			}
+		],
+		"typeProperties": {
+			"schema": "silver",
+			"table": "spl_afiliaciones"
+		}
+	}
+}

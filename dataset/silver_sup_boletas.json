@@ -1,0 +1,63 @@
+{
+	"name": "silver_sup_boletas",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dw_beneficiarios",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "silver/SUP"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "boleta_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "control_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "ci_beneficiaria_original",
+				"type": "varchar"
+			},
+			{
+				"name": "ci_beneficiaria_normalizado",
+				"type": "varchar"
+			},
+			{
+				"name": "nro_boleta",
+				"type": "varchar"
+			},
+			{
+				"name": "fecha_emision",
+				"type": "date"
+			},
+			{
+				"name": "estado",
+				"type": "varchar"
+			},
+			{
+				"name": "registro_valido",
+				"type": "bit"
+			},
+			{
+				"name": "observacion_calidad",
+				"type": "varchar"
+			},
+			{
+				"name": "fecha_carga",
+				"type": "datetime2",
+				"scale": 7
+			}
+		],
+		"typeProperties": {
+			"schema": "silver",
+			"table": "sup_boletas"
+		}
+	}
+}

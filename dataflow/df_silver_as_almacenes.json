@@ -15,7 +15,15 @@
 					"name": "source1"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "silver_as_almacenes",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
 			"transformations": [
 				{
 					"name": "derivedColumn1"
@@ -44,7 +52,40 @@
 				"          capacidad_m3 = toDecimal(regexReplace(toString(capacidad_m3), '[^0-9.]', '')),",
 				"          estado = case(     in(['activo','ACTIVO','Activo'], estado), 'ACTIVO',     in(['inactivo','INACTIVO','Inactivo'], estado), 'INACTIVO',     isNull(estado), 'SIN_ESTADO',     upper(trim(estado)) ),",
 				"          registro_valido = iif(isNull(almacen_id), false(), true()),",
-				"          observacion_calidad = iif(isNull(almacen_id), 'almacen_id inválido', 'OK')) ~> derivedColumn1"
+				"          observacion_calidad = iif(isNull(almacen_id), 'almacen_id inválido', 'OK')) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          almacen_id as integer,",
+				"          nombre as string,",
+				"          municipio as string,",
+				"          departamento as string,",
+				"          direccion as string,",
+				"          capacidad_m3 as decimal(18,2),",
+				"          estado as string,",
+				"          registro_valido as boolean,",
+				"          observacion_calidad as string,",
+				"          fecha_carga as timestamp",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          almacen_id,",
+				"          nombre,",
+				"          municipio,",
+				"          departamento,",
+				"          direccion,",
+				"          capacidad_m3,",
+				"          estado,",
+				"          registro_valido,",
+				"          observacion_calidad",
+				"     )) ~> sink1"
 			]
 		}
 	}

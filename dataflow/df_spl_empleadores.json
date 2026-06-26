@@ -15,7 +15,15 @@
 					"name": "source1"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "silver_spl_empleadores",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
 			"transformations": [
 				{
 					"name": "derivedColumn1"
@@ -42,7 +50,38 @@
 				"          nro_patronal = upper(regexReplace(trim(nro_patronal), '\\\\s+', '')),",
 				"          municipio = initCap(regexReplace(trim(municipio), '\\\\s+', ' ')),",
 				"          registro_valido = iif(isNull(empleador_id), false(), true()),",
-				"          observacion_calidad = iif(isNull(empleador_id), 'empleador_id inválido', 'OK')) ~> derivedColumn1"
+				"          observacion_calidad = iif(isNull(empleador_id), 'empleador_id inválido', 'OK')) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          empleador_id as integer,",
+				"          nit as string,",
+				"          razon_social as string,",
+				"          tipo as string,",
+				"          nro_patronal as string,",
+				"          municipio as string,",
+				"          registro_valido as boolean,",
+				"          observacion_calidad as string,",
+				"          fecha_carga as timestamp",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          empleador_id,",
+				"          nit,",
+				"          razon_social,",
+				"          tipo,",
+				"          nro_patronal,",
+				"          municipio,",
+				"          registro_valido,",
+				"          observacion_calidad",
+				"     )) ~> sink1"
 			]
 		}
 	}

@@ -15,7 +15,15 @@
 					"name": "source1"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "silver_bja_establecimientos_salud",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
 			"transformations": [
 				{
 					"name": "derivedColumn1"
@@ -39,7 +47,7 @@
 				"     query: 'SELECT\\n    TRIM(establecimiento_id) AS establecimiento_id,\\n    TRIM(codigo_snis) AS codigo_snis,\\n    TRIM(nombre) AS nombre,\\n    TRIM(tipo) AS tipo,\\n    TRIM(nivel_atencion) AS nivel_atencion,\\n    TRIM(municipio) AS municipio,\\n    TRIM(departamento) AS departamento,\\n    TRIM(red_salud) AS red_salud,\\n    TRIM(estado) AS estado\\nFROM bronze.bja_establecimientos_salud\\nWHERE establecimiento_id IS NOT NULL\\n  AND TRIM(establecimiento_id) <> \\'\\'',",
 				"     format: 'query') ~> source1",
 				"source1 derive(establecimiento_id = toInteger(establecimiento_id),",
-				"          codigo_snis =  upper(regexReplace(trim(codigo_snis), '\\\\s+', '')),",
+				"          codigo_snis = upper(regexReplace(trim(codigo_snis), '\\\\s+', '')),",
 				"          nombre = initCap(regexReplace(trim(nombre), '\\\\s+', ' ')),",
 				"          tipo = initCap(regexReplace(trim(tipo), '\\\\s+', ' ')),",
 				"          nivel_atencion = initCap(regexReplace(trim(nivel_atencion), '\\\\s+', ' ')),",
@@ -48,7 +56,44 @@
 				"          red_salud = initCap(regexReplace(trim(red_salud), '\\\\s+', ' ')),",
 				"          estado = case(     in(['Activo','ACTIVO','activo'], estado), 'ACTIVO',     in(['Inactivo','INACTIVO','inactivo'], estado), 'INACTIVO',     isNull(estado), 'SIN_ESTADO',     upper(trim(estado)) ),",
 				"          registro_valido = iif(isNull(establecimiento_id), false(), true()),",
-				"          observacion_calidad = iif(isNull(establecimiento_id), 'establecimiento_id inválido', 'OK')) ~> derivedColumn1"
+				"          observacion_calidad = iif(isNull(establecimiento_id), 'establecimiento_id inválido', 'OK')) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          establecimiento_id as integer,",
+				"          codigo_snis as string,",
+				"          nombre as string,",
+				"          tipo as string,",
+				"          nivel_atencion as string,",
+				"          municipio as string,",
+				"          departamento as string,",
+				"          red_salud as string,",
+				"          estado as string,",
+				"          registro_valido as boolean,",
+				"          observacion_calidad as string,",
+				"          fecha_carga as timestamp",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          establecimiento_id,",
+				"          codigo_snis,",
+				"          nombre,",
+				"          tipo,",
+				"          nivel_atencion,",
+				"          municipio,",
+				"          departamento,",
+				"          red_salud,",
+				"          estado,",
+				"          registro_valido,",
+				"          observacion_calidad",
+				"     )) ~> sink1"
 			]
 		}
 	}

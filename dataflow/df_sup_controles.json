@@ -15,7 +15,15 @@
 					"name": "source1"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "silver_sup_controles",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
 			"transformations": [
 				{
 					"name": "derivedColumn1"
@@ -47,7 +55,44 @@
 				"          peso_madre_kg = toDecimal(regexReplace(toString(peso_madre_kg), '[^0-9.]', '')),",
 				"          presion_arterial = iifNull(upper(regexReplace(trim(presion_arterial), '\\\\s+', '')), 'SIN_DATO'),",
 				"          registro_valido = iif(     isNull(control_id) ||     isNull(ci_beneficiaria_normalizado) ||     isNull(fecha_control),     false(),     true() ),",
-				"          observacion_calidad = case(     isNull(control_id), 'control_id inválido',     isNull(ci_beneficiaria_normalizado), 'CI beneficiaria inválido',     isNull(fecha_control), 'fecha_control inválida',     'OK' )) ~> derivedColumn1"
+				"          observacion_calidad = case(     isNull(control_id), 'control_id inválido',     isNull(ci_beneficiaria_normalizado), 'CI beneficiaria inválido',     isNull(fecha_control), 'fecha_control inválida',     'OK' )) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          control_id as integer,",
+				"          ci_beneficiaria_original as string,",
+				"          ci_beneficiaria_normalizado as string,",
+				"          establecimiento_id as integer,",
+				"          nro_control as integer,",
+				"          fecha_control as date,",
+				"          semana_gestacion as integer,",
+				"          peso_madre_kg as decimal(10,2),",
+				"          presion_arterial as string,",
+				"          registro_valido as boolean,",
+				"          observacion_calidad as string,",
+				"          fecha_carga as timestamp",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          control_id,",
+				"          ci_beneficiaria_original,",
+				"          ci_beneficiaria_normalizado,",
+				"          establecimiento_id,",
+				"          nro_control,",
+				"          fecha_control,",
+				"          semana_gestacion,",
+				"          peso_madre_kg,",
+				"          presion_arterial,",
+				"          registro_valido,",
+				"          observacion_calidad",
+				"     )) ~> sink1"
 			]
 		}
 	}

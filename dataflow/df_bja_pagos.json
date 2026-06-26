@@ -15,7 +15,15 @@
 					"name": "source1"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "silver_bja_pagos",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
 			"transformations": [
 				{
 					"name": "derivedColumn1"
@@ -40,14 +48,51 @@
 				"     format: 'query') ~> source1",
 				"source1 derive(pago_id = toInteger(pago_id),",
 				"          ci_beneficiaria_normalizado = upper(regexReplace(regexReplace(regexReplace(trim(ci_beneficiaria_normalizado), '-', ''), '\\\\s+', ''), '\\\\.', '')),",
-				"          concepto_pago =  initCap(regexReplace(trim(concepto_pago), '\\\\s+', ' ')),",
+				"          concepto_pago = initCap(regexReplace(trim(concepto_pago), '\\\\s+', ' ')),",
 				"          monto_bs = toDecimal(regexReplace(toString(monto_bs), '[^0-9.]', '')),",
 				"          fecha_pago = coalesce(     toDate(fecha_pago, 'yyyy-MM-dd'),     toDate(fecha_pago, 'dd/MM/yyyy'),     toDate(fecha_pago, 'MM/dd/yyyy'),     toDate(fecha_pago, 'dd-MM-yyyy') ),",
 				"          estado_pago = case(     in(['Pagado','PAGADO','pagado','pAGADO'], estado_pago), 'PAGADO',     in(['Pendiente','PENDIENTE','pendiente'], estado_pago), 'PENDIENTE',     in(['Anulado','ANULADO','anulado'], estado_pago), 'ANULADO',     isNull(estado_pago), 'SIN_ESTADO',     upper(trim(estado_pago)) ),",
-				"          canal_pago =  iifNull(initCap(regexReplace(trim(canal_pago), '\\\\s+', ' ')), 'Sin Canal'),",
+				"          canal_pago = iifNull(initCap(regexReplace(trim(canal_pago), '\\\\s+', ' ')), 'Sin Canal'),",
 				"          nro_comprobante = iifNull(upper(regexReplace(trim(nro_comprobante), '\\\\s+', '')), 'SIN_COMPROBANTE'),",
 				"          registro_valido = iif(     isNull(pago_id) ||     isNull(ci_beneficiaria_normalizado) ||     isNull(monto_bs),     false(),     true() ),",
-				"          observacion_calidad = case(     isNull(pago_id), 'pago_id inválido',     isNull(ci_beneficiaria_normalizado), 'CI beneficiaria inválido',     isNull(monto_bs), 'monto_bs inválido',     'OK' )) ~> derivedColumn1"
+				"          observacion_calidad = case(     isNull(pago_id), 'pago_id inválido',     isNull(ci_beneficiaria_normalizado), 'CI beneficiaria inválido',     isNull(monto_bs), 'monto_bs inválido',     'OK' )) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          pago_id as integer,",
+				"          ci_beneficiaria_original as string,",
+				"          ci_beneficiaria_normalizado as string,",
+				"          concepto_pago as string,",
+				"          monto_bs as decimal(18,2),",
+				"          fecha_pago as date,",
+				"          estado_pago as string,",
+				"          canal_pago as string,",
+				"          nro_comprobante as string,",
+				"          registro_valido as boolean,",
+				"          observacion_calidad as string,",
+				"          fecha_carga as timestamp",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          pago_id,",
+				"          ci_beneficiaria_original,",
+				"          ci_beneficiaria_normalizado,",
+				"          concepto_pago,",
+				"          monto_bs,",
+				"          fecha_pago,",
+				"          estado_pago,",
+				"          canal_pago,",
+				"          nro_comprobante,",
+				"          registro_valido,",
+				"          observacion_calidad",
+				"     )) ~> sink1"
 			]
 		}
 	}

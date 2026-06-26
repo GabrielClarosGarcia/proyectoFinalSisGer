@@ -17,6 +17,10 @@
 			],
 			"sinks": [
 				{
+					"dataset": {
+						"referenceName": "silver_spl_entregas_supermercado",
+						"type": "DatasetReference"
+					},
 					"name": "sink1"
 				}
 			],
@@ -54,8 +58,41 @@
 				"          observacion_calidad = case(     isNull(entrega_super_id), 'entrega_super_id inválido',     isNull(asignacion_id), 'asignacion_id inválido',     isNull(ci_beneficiaria_normalizado), 'CI beneficiaria inválido',     'OK' )) ~> derivedColumn1",
 				"derivedColumn1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
+				"     input(",
+				"          entrega_super_id as integer,",
+				"          asignacion_id as integer,",
+				"          ci_beneficiaria_original as string,",
+				"          ci_beneficiaria_normalizado as string,",
+				"          supermercado_id as integer,",
+				"          fecha_retiro as date,",
+				"          tipo_carne as string,",
+				"          cantidad_kg as decimal(10,2),",
+				"          monto_bs as decimal(18,2),",
+				"          registro_valido as boolean,",
+				"          observacion_calidad as string,",
+				"          fecha_carga as timestamp",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
 				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true) ~> sink1"
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          entrega_super_id,",
+				"          asignacion_id,",
+				"          ci_beneficiaria_original,",
+				"          ci_beneficiaria_normalizado,",
+				"          supermercado_id,",
+				"          fecha_retiro,",
+				"          tipo_carne,",
+				"          cantidad_kg,",
+				"          monto_bs,",
+				"          registro_valido,",
+				"          observacion_calidad",
+				"     )) ~> sink1"
 			]
 		}
 	}

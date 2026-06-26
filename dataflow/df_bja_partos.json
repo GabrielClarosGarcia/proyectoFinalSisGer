@@ -15,7 +15,15 @@
 					"name": "source1"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "silver_bja_partos",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
 			"transformations": [
 				{
 					"name": "derivedColumn1"
@@ -48,7 +56,46 @@
 				"          peso_nacimiento_kg = toDecimal(regexReplace(toString(peso_nacimiento_kg), '[^0-9.]', '')),",
 				"          talla_nacimiento_cm = toDecimal(regexReplace(toString(talla_nacimiento_cm), '[^0-9.]', '')),",
 				"          registro_valido = iif(     isNull(parto_id) ||     isNull(ci_madre_normalizado) ||     isNull(fecha_parto),     false(),     true() ),",
-				"          observacion_calidad = case(     isNull(parto_id), 'parto_id inválido',     isNull(ci_madre_normalizado), 'CI madre inválido',     isNull(fecha_parto), 'fecha_parto inválida',     'OK' )) ~> derivedColumn1"
+				"          observacion_calidad = case(     isNull(parto_id), 'parto_id inválido',     isNull(ci_madre_normalizado), 'CI madre inválido',     isNull(fecha_parto), 'fecha_parto inválida',     'OK' )) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          parto_id as integer,",
+				"          ci_madre_original as string,",
+				"          ci_madre_normalizado as string,",
+				"          ci_recien_nacido_original as string,",
+				"          ci_recien_nacido_normalizado as string,",
+				"          establecimiento_id as integer,",
+				"          fecha_parto as date,",
+				"          tipo_parto as string,",
+				"          peso_nacimiento_kg as decimal(10,2),",
+				"          talla_nacimiento_cm as decimal(10,2),",
+				"          registro_valido as boolean,",
+				"          observacion_calidad as string,",
+				"          fecha_carga as timestamp",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          parto_id,",
+				"          ci_madre_original,",
+				"          ci_madre_normalizado,",
+				"          ci_recien_nacido_original,",
+				"          ci_recien_nacido_normalizado,",
+				"          establecimiento_id,",
+				"          fecha_parto,",
+				"          tipo_parto,",
+				"          peso_nacimiento_kg,",
+				"          talla_nacimiento_cm,",
+				"          registro_valido,",
+				"          observacion_calidad",
+				"     )) ~> sink1"
 			]
 		}
 	}

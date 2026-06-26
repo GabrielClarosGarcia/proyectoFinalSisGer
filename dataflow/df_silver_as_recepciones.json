@@ -15,7 +15,15 @@
 					"name": "source1"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "silver_as_recepciones",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
 			"transformations": [
 				{
 					"name": "derivedColumn1"
@@ -56,7 +64,52 @@
 				"          nro_guia_remision = iifNull(upper(regexReplace(trim(nro_guia_remision), '\\\\s+', '')), 'SIN_GUIA'),",
 				"          temperatura_llegada = toDecimal(regexReplace(toString(temperatura_llegada), '[^0-9.-]', '')),",
 				"          registro_valido = iif(     isNull(recepcion_id) ||      isNull(fecha_recepcion) ||      isNull(cantidad_recibida),     false(),     true() ),",
-				"          observacion_calidad = case(     isNull(recepcion_id), 'recepcion_id inválido',     isNull(fecha_recepcion), 'fecha_recepcion inválida',     isNull(cantidad_recibida), 'cantidad_recibida inválida',     'OK' )) ~> derivedColumn1"
+				"          observacion_calidad = case(     isNull(recepcion_id), 'recepcion_id inválido',     isNull(fecha_recepcion), 'fecha_recepcion inválida',     isNull(cantidad_recibida), 'cantidad_recibida inválida',     'OK' )) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          recepcion_id as integer,",
+				"          nro_lote as string,",
+				"          almacen_id as integer,",
+				"          transportista_id as integer,",
+				"          vehiculo_id as integer,",
+				"          fecha_recepcion as date,",
+				"          cantidad_recibida as decimal(18,2),",
+				"          unidad as string,",
+				"          condicion as string,",
+				"          estado as string,",
+				"          responsable as string,",
+				"          nro_guia_remision as string,",
+				"          temperatura_llegada as decimal(10,2),",
+				"          registro_valido as boolean,",
+				"          observacion_calidad as string,",
+				"          fecha_carga as timestamp",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          recepcion_id,",
+				"          nro_lote,",
+				"          almacen_id,",
+				"          transportista_id,",
+				"          vehiculo_id,",
+				"          fecha_recepcion,",
+				"          cantidad_recibida,",
+				"          unidad,",
+				"          condicion,",
+				"          estado,",
+				"          responsable,",
+				"          nro_guia_remision,",
+				"          temperatura_llegada,",
+				"          registro_valido,",
+				"          observacion_calidad",
+				"     )) ~> sink1"
 			]
 		}
 	}

@@ -15,7 +15,15 @@
 					"name": "source1"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "silver_spl_asignaciones_mensuales",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
 			"transformations": [
 				{
 					"name": "derivedColumn1"
@@ -46,7 +54,42 @@
 				"          monto_carnes = toDecimal(regexReplace(toString(monto_carnes), '[^0-9.]', '')),",
 				"          estado = case(     in(['Acreditado','ACREDITADO','acreditado','aCREDITADO','pENDIENTE'], estado) && !in(['pENDIENTE'], estado), 'ACREDITADO',     in(['Pendiente','PENDIENTE','pendiente','pENDIENTE'], estado), 'PENDIENTE',     isNull(estado), 'SIN_ESTADO',     upper(trim(estado)) ),",
 				"          registro_valido = iif(     isNull(asignacion_id) ||     isNull(afiliacion_id) ||     isNull(mes) ||     isNull(gestion),     false(),     true() ),",
-				"          observacion_calidad = case(     isNull(asignacion_id), 'asignacion_id inválido',     isNull(afiliacion_id), 'afiliacion_id inválido',     isNull(mes), 'mes inválido',     isNull(gestion), 'gestion inválida',     'OK' )) ~> derivedColumn1"
+				"          observacion_calidad = case(     isNull(asignacion_id), 'asignacion_id inválido',     isNull(afiliacion_id), 'afiliacion_id inválido',     isNull(mes), 'mes inválido',     isNull(gestion), 'gestion inválida',     'OK' )) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          asignacion_id as integer,",
+				"          afiliacion_id as integer,",
+				"          mes as integer,",
+				"          gestion as integer,",
+				"          monto_bs as decimal(18,2),",
+				"          monto_productos as decimal(18,2),",
+				"          monto_carnes as decimal(18,2),",
+				"          estado as string,",
+				"          registro_valido as boolean,",
+				"          observacion_calidad as string,",
+				"          fecha_carga as timestamp",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          asignacion_id,",
+				"          afiliacion_id,",
+				"          mes,",
+				"          gestion,",
+				"          monto_bs,",
+				"          monto_productos,",
+				"          monto_carnes,",
+				"          estado,",
+				"          registro_valido,",
+				"          observacion_calidad",
+				"     )) ~> sink1"
 			]
 		}
 	}

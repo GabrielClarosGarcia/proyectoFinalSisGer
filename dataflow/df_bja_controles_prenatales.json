@@ -15,7 +15,15 @@
 					"name": "source1"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "silver_bja_controles_prenatales",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
 			"transformations": [
 				{
 					"name": "derivedColumn1"
@@ -49,7 +57,46 @@
 				"          presion_arterial = iifNull(upper(regexReplace(trim(presion_arterial), '\\\\s+', '')), 'SIN_DATO'),",
 				"          resultado = case(     in(['Normal','NORMAL','normal'], resultado), 'NORMAL',     in(['Observado','OBSERVADO','observado'], resultado), 'OBSERVADO',     in(['Riesgo','RIESGO','riesgo'], resultado), 'RIESGO',     isNull(resultado), 'SIN_RESULTADO',     upper(trim(resultado)) ),",
 				"          registro_valido = iif(     isNull(control_prenatal_id) ||     isNull(ci_beneficiaria_normalizado) ||     isNull(fecha_control),     false(),     true() ),",
-				"          observacion_calidad = case(     isNull(control_prenatal_id), 'control_prenatal_id inválido',     isNull(ci_beneficiaria_normalizado), 'CI beneficiaria inválido',     isNull(fecha_control), 'fecha_control inválida',     'OK' )) ~> derivedColumn1"
+				"          observacion_calidad = case(     isNull(control_prenatal_id), 'control_prenatal_id inválido',     isNull(ci_beneficiaria_normalizado), 'CI beneficiaria inválido',     isNull(fecha_control), 'fecha_control inválida',     'OK' )) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          control_prenatal_id as integer,",
+				"          ci_beneficiaria_original as string,",
+				"          ci_beneficiaria_normalizado as string,",
+				"          establecimiento_id as integer,",
+				"          nro_control as integer,",
+				"          fecha_control as date,",
+				"          semana_gestacion as integer,",
+				"          peso_madre_kg as decimal(10,2),",
+				"          presion_arterial as string,",
+				"          resultado as string,",
+				"          registro_valido as boolean,",
+				"          observacion_calidad as string,",
+				"          fecha_carga as timestamp",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          control_prenatal_id,",
+				"          ci_beneficiaria_original,",
+				"          ci_beneficiaria_normalizado,",
+				"          establecimiento_id,",
+				"          nro_control,",
+				"          fecha_control,",
+				"          semana_gestacion,",
+				"          peso_madre_kg,",
+				"          presion_arterial,",
+				"          resultado,",
+				"          registro_valido,",
+				"          observacion_calidad",
+				"     )) ~> sink1"
 			]
 		}
 	}

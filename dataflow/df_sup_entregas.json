@@ -15,7 +15,15 @@
 					"name": "source1"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "silver_sup_entregas",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
 			"transformations": [
 				{
 					"name": "derivedColumn1"
@@ -51,7 +59,48 @@
 				"          peso_paquete_kg = toDecimal(regexReplace(toString(peso_paquete_kg), '[^0-9.]', '')),",
 				"          fecha_proxima_entrega = coalesce(     toDate(fecha_proxima_entrega, 'yyyy-MM-dd'),     toDate(fecha_proxima_entrega, 'dd/MM/yyyy'),     toDate(fecha_proxima_entrega, 'MM/dd/yyyy'),     toDate(fecha_proxima_entrega, 'dd-MM-yyyy') ),",
 				"          registro_valido = iif(     isNull(entrega_id) ||     isNull(boleta_id) ||     isNull(ci_beneficiaria_normalizado) ||     isNull(fecha_entrega),     false(),     true() ),",
-				"          observacion_calidad = case(     isNull(entrega_id), 'entrega_id inválido',     isNull(boleta_id), 'boleta_id inválido',     isNull(ci_beneficiaria_normalizado), 'CI beneficiaria inválido',     isNull(fecha_entrega), 'fecha_entrega inválida',     'OK' )) ~> derivedColumn1"
+				"          observacion_calidad = case(     isNull(entrega_id), 'entrega_id inválido',     isNull(boleta_id), 'boleta_id inválido',     isNull(ci_beneficiaria_normalizado), 'CI beneficiaria inválido',     isNull(fecha_entrega), 'fecha_entrega inválida',     'OK' )) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          entrega_id as integer,",
+				"          boleta_id as integer,",
+				"          ci_beneficiaria_original as string,",
+				"          ci_beneficiaria_normalizado as string,",
+				"          establecimiento_id as integer,",
+				"          paquete_id as integer,",
+				"          paquete_nombre as string,",
+				"          fecha_entrega as date,",
+				"          lote_produccion as string,",
+				"          peso_paquete_kg as decimal(10,2),",
+				"          fecha_proxima_entrega as date,",
+				"          registro_valido as boolean,",
+				"          observacion_calidad as string,",
+				"          fecha_carga as timestamp",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          entrega_id,",
+				"          boleta_id,",
+				"          ci_beneficiaria_original,",
+				"          ci_beneficiaria_normalizado,",
+				"          establecimiento_id,",
+				"          paquete_id,",
+				"          paquete_nombre,",
+				"          fecha_entrega,",
+				"          lote_produccion,",
+				"          peso_paquete_kg,",
+				"          fecha_proxima_entrega,",
+				"          registro_valido,",
+				"          observacion_calidad",
+				"     )) ~> sink1"
 			]
 		}
 	}

@@ -1,0 +1,76 @@
+{
+	"name": "silver_spl_entregas_supermercado",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dw_beneficiarios",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "silver/SPL"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "entrega_super_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "asignacion_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "ci_beneficiaria_original",
+				"type": "varchar"
+			},
+			{
+				"name": "ci_beneficiaria_normalizado",
+				"type": "varchar"
+			},
+			{
+				"name": "supermercado_id",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "fecha_retiro",
+				"type": "date"
+			},
+			{
+				"name": "tipo_carne",
+				"type": "varchar"
+			},
+			{
+				"name": "cantidad_kg",
+				"type": "decimal",
+				"precision": 10,
+				"scale": 2
+			},
+			{
+				"name": "monto_bs",
+				"type": "decimal",
+				"precision": 18,
+				"scale": 2
+			},
+			{
+				"name": "registro_valido",
+				"type": "bit"
+			},
+			{
+				"name": "observacion_calidad",
+				"type": "varchar"
+			},
+			{
+				"name": "fecha_carga",
+				"type": "datetime2",
+				"scale": 7
+			}
+		],
+		"typeProperties": {
+			"schema": "silver",
+			"table": "spl_entregas_supermercado"
+		}
+	}
+}

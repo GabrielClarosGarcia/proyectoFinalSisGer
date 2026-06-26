@@ -15,7 +15,15 @@
 					"name": "source1"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "silver_spl_entregas_agencia",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
 			"transformations": [
 				{
 					"name": "derivedColumn1"
@@ -47,7 +55,44 @@
 				"          peso_kg = toDecimal(regexReplace(toString(peso_kg), '[^0-9.]', '')),",
 				"          punto_entrega = iifNull(initCap(regexReplace(trim(punto_entrega), '\\\\s+', ' ')), 'Sin Punto'),",
 				"          registro_valido = iif(     isNull(entrega_ag_id) ||     isNull(asignacion_id) ||     isNull(ci_beneficiaria_normalizado) ||     isNull(fecha_entrega),     false(),     true() ),",
-				"          observacion_calidad = case(     isNull(entrega_ag_id), 'entrega_ag_id inválido',     isNull(asignacion_id), 'asignacion_id inválido',     isNull(ci_beneficiaria_normalizado), 'CI beneficiaria inválido',     isNull(fecha_entrega), 'fecha_entrega inválida',     'OK' )) ~> derivedColumn1"
+				"          observacion_calidad = case(     isNull(entrega_ag_id), 'entrega_ag_id inválido',     isNull(asignacion_id), 'asignacion_id inválido',     isNull(ci_beneficiaria_normalizado), 'CI beneficiaria inválido',     isNull(fecha_entrega), 'fecha_entrega inválida',     'OK' )) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          entrega_ag_id as integer,",
+				"          asignacion_id as integer,",
+				"          ci_beneficiaria_original as string,",
+				"          ci_beneficiaria_normalizado as string,",
+				"          fecha_entrega as date,",
+				"          productos as string,",
+				"          lote as string,",
+				"          peso_kg as decimal(10,2),",
+				"          punto_entrega as string,",
+				"          registro_valido as boolean,",
+				"          observacion_calidad as string,",
+				"          fecha_carga as timestamp",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          entrega_ag_id,",
+				"          asignacion_id,",
+				"          ci_beneficiaria_original,",
+				"          ci_beneficiaria_normalizado,",
+				"          fecha_entrega,",
+				"          productos,",
+				"          lote,",
+				"          peso_kg,",
+				"          punto_entrega,",
+				"          registro_valido,",
+				"          observacion_calidad",
+				"     )) ~> sink1"
 			]
 		}
 	}

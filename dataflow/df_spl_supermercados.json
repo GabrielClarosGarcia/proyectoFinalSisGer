@@ -15,7 +15,15 @@
 					"name": "source1"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "silver_spl_supermercados",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
 			"transformations": [
 				{
 					"name": "derivedColumn1"
@@ -42,7 +50,38 @@
 				"          direccion = initCap(regexReplace(trim(direccion), '\\\\s+', ' ')),",
 				"          estado = case(     in(['Activo','ACTIVO','activo'], estado), 'ACTIVO',     in(['Inactivo','INACTIVO','inactivo'], estado), 'INACTIVO',     isNull(estado), 'SIN_ESTADO',     upper(trim(estado)) ),",
 				"          registro_valido = iif(isNull(supermercado_id), false(), true()),",
-				"          observacion_calidad = iif(isNull(supermercado_id), 'supermercado_id inválido', 'OK')) ~> derivedColumn1"
+				"          observacion_calidad = iif(isNull(supermercado_id), 'supermercado_id inválido', 'OK')) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          supermercado_id as integer,",
+				"          cadena as string,",
+				"          sucursal as string,",
+				"          municipio as string,",
+				"          direccion as string,",
+				"          estado as string,",
+				"          registro_valido as boolean,",
+				"          observacion_calidad as string,",
+				"          fecha_carga as timestamp",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          supermercado_id,",
+				"          cadena,",
+				"          sucursal,",
+				"          municipio,",
+				"          direccion,",
+				"          estado,",
+				"          registro_valido,",
+				"          observacion_calidad",
+				"     )) ~> sink1"
 			]
 		}
 	}

@@ -15,7 +15,15 @@
 					"name": "source1"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "silver_bja_inscripciones",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
 			"transformations": [
 				{
 					"name": "derivedColumn1"
@@ -43,7 +51,40 @@
 				"          semana_gestacion = toInteger(semana_gestacion),",
 				"          estado = case(     in(['Activo','ACTIVO','activo'], estado), 'ACTIVO',     in(['Inactivo','INACTIVO','inactivo'], estado), 'INACTIVO',     in(['Completado','COMPLETADO','completado'], estado), 'COMPLETADO',     isNull(estado), 'SIN_ESTADO',     upper(trim(estado)) ),",
 				"          {registro_valido } = iif(     isNull(inscripcion_id) ||     isNull(ci_beneficiaria_normalizado) ||     isNull(fecha_inscripcion),     false(),     true() ),",
-				"          observacion_calidad = case(     isNull(inscripcion_id), 'inscripcion_id inválido',     isNull(ci_beneficiaria_normalizado), 'CI beneficiaria inválido',     isNull(fecha_inscripcion), 'fecha_inscripcion inválida',     'OK' )) ~> derivedColumn1"
+				"          observacion_calidad = case(     isNull(inscripcion_id), 'inscripcion_id inválido',     isNull(ci_beneficiaria_normalizado), 'CI beneficiaria inválido',     isNull(fecha_inscripcion), 'fecha_inscripcion inválida',     'OK' )) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          inscripcion_id as integer,",
+				"          ci_beneficiaria_original as string,",
+				"          ci_beneficiaria_normalizado as string,",
+				"          establecimiento_id as integer,",
+				"          fecha_inscripcion as date,",
+				"          semana_gestacion as integer,",
+				"          estado as string,",
+				"          registro_valido as boolean,",
+				"          observacion_calidad as string,",
+				"          fecha_carga as timestamp",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          inscripcion_id,",
+				"          ci_beneficiaria_original,",
+				"          ci_beneficiaria_normalizado,",
+				"          establecimiento_id,",
+				"          fecha_inscripcion,",
+				"          semana_gestacion,",
+				"          estado,",
+				"          registro_valido = {registro_valido },",
+				"          observacion_calidad",
+				"     )) ~> sink1"
 			]
 		}
 	}
