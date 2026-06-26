@@ -1,0 +1,89 @@
+{
+	"name": "df_gold_dim_tiempo",
+	"properties": {
+		"folder": {
+			"name": "gold"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "gold_dim_tiempo",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "gold_dim_tiempo",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          fecha_key as integer,",
+				"          fecha as date,",
+				"          dia_semana as integer,",
+				"          nombre_dia as string,",
+				"          dia_mes as integer,",
+				"          mes as integer,",
+				"          nombre_mes as string,",
+				"          trimestre as integer,",
+				"          anio as integer,",
+				"          es_fin_semana as boolean",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT \\n    CAST(CONVERT(VARCHAR(8), CAST(s.fecha AS DATE), 112) AS INT) AS fecha_key,\\n    CAST(s.fecha AS DATE) AS fecha,\\n    DATEPART(WEEKDAY, s.fecha) AS dia_semana,\\n    DATENAME(WEEKDAY, s.fecha) AS nombre_dia,\\n    DAY(s.fecha) AS dia_mes,\\n    MONTH(s.fecha) AS mes,\\n    DATENAME(MONTH, s.fecha) AS nombre_mes,\\n    DATEPART(QUARTER, s.fecha) AS trimestre,\\n    YEAR(s.fecha) AS anio,\\n    CASE \\n        WHEN DATEPART(WEEKDAY, s.fecha) IN (6, 7) THEN 1 \\n        ELSE 0 \\n    END AS es_fin_semana\\nFROM (\\n    SELECT DISTINCT CAST(fecha_inscripcion AS DATE) AS fecha\\n    FROM silver.bja_inscripciones\\n    WHERE fecha_inscripcion IS NOT NULL\\n\\n    UNION\\n\\n    SELECT DISTINCT CAST(fecha_control AS DATE)\\n    FROM silver.bja_controles_prenatales\\n    WHERE fecha_control IS NOT NULL\\n\\n    UNION\\n\\n    SELECT DISTINCT CAST(fecha_control AS DATE)\\n    FROM silver.bja_controles_pediatricos\\n    WHERE fecha_control IS NOT NULL\\n\\n    UNION\\n\\n    SELECT DISTINCT CAST(fecha_parto AS DATE)\\n    FROM silver.bja_partos\\n    WHERE fecha_parto IS NOT NULL\\n\\n    UNION\\n\\n    SELECT DISTINCT CAST(fecha_pago AS DATE)\\n    FROM silver.bja_pagos\\n    WHERE fecha_pago IS NOT NULL\\n\\n    UNION\\n\\n    SELECT DISTINCT CAST(fecha_inscripcion AS DATE)\\n    FROM silver.sup_inscripciones\\n    WHERE fecha_inscripcion IS NOT NULL\\n\\n    UNION\\n\\n    SELECT DISTINCT CAST(fecha_control AS DATE)\\n    FROM silver.sup_controles\\n    WHERE fecha_control IS NOT NULL\\n\\n    UNION\\n\\n    SELECT DISTINCT CAST(fecha_emision AS DATE)\\n    FROM silver.sup_boletas\\n    WHERE fecha_emision IS NOT NULL\\n\\n    UNION\\n\\n    SELECT DISTINCT CAST(fecha_entrega AS DATE)\\n    FROM silver.sup_entregas\\n    WHERE fecha_entrega IS NOT NULL\\n\\n    UNION\\n\\n    SELECT DISTINCT CAST(fecha_afiliacion AS DATE)\\n    FROM silver.spl_afiliaciones\\n    WHERE fecha_afiliacion IS NOT NULL\\n\\n    UNION\\n\\n    SELECT DISTINCT CAST(fecha_entrega AS DATE)\\n    FROM silver.spl_entregas_agencia\\n    WHERE fecha_entrega IS NOT NULL\\n\\n    UNION\\n\\n    SELECT DISTINCT CAST(fecha_retiro AS DATE)\\n    FROM silver.spl_entregas_supermercado\\n    WHERE fecha_retiro IS NOT NULL\\n\\n    UNION\\n\\n    SELECT DISTINCT CAST(DATEFROMPARTS(gestion, mes, 1) AS DATE)\\n    FROM silver.spl_asignaciones_mensuales\\n    WHERE gestion IS NOT NULL\\n      AND mes BETWEEN 1 AND 12\\n\\n    UNION\\n\\n    SELECT DISTINCT CAST(fecha_recepcion AS DATE)\\n    FROM silver.as_recepciones\\n    WHERE fecha_recepcion IS NOT NULL\\n\\n    UNION\\n\\n    SELECT DISTINCT CAST(fecha_despacho AS DATE)\\n    FROM silver.as_despachos\\n    WHERE fecha_despacho IS NOT NULL\\n\\n    UNION\\n\\n    SELECT DISTINCT CAST(fecha_llegada AS DATE)\\n    FROM silver.as_despachos\\n    WHERE fecha_llegada IS NOT NULL\\n) s',",
+				"     format: 'query') ~> source1",
+				"source1 derive(nombre_mes = initCap(trim(nombre_mes)),",
+				"          nombre_dia = initCap(trim(nombre_dia))) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          fecha_key as integer,",
+				"          fecha as date,",
+				"          dia_semana as integer,",
+				"          nombre_dia as string,",
+				"          dia_mes as integer,",
+				"          mes as integer,",
+				"          nombre_mes as string,",
+				"          trimestre as integer,",
+				"          anio as integer,",
+				"          es_fin_semana as boolean",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          fecha_key,",
+				"          fecha,",
+				"          dia_semana,",
+				"          nombre_dia,",
+				"          dia_mes,",
+				"          mes,",
+				"          nombre_mes,",
+				"          trimestre,",
+				"          anio,",
+				"          es_fin_semana",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}

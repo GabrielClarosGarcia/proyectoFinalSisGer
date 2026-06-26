@@ -1,0 +1,71 @@
+{
+	"name": "df_gold_dim_estado_operacion",
+	"properties": {
+		"folder": {
+			"name": "gold"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "gold_dim_estado_operacion",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "gold_dim_estado_operacion",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          estado_key as integer,",
+				"          estado_normalizado as string,",
+				"          grupo_estado as string,",
+				"          descripcion as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT DISTINCT\\n    s.estado_normalizado,\\n    CASE\\n        WHEN s.estado_normalizado IN (\\n            \\'PAGADO\\', \\'ACREDITADO\\', \\'VIGENTE\\', \\'ACTIVO\\',\\n            \\'RECIBIDO\\', \\'DESPACHADO\\', \\'ENTREGADO\\',\\n            \\'NORMAL\\', \\'NATURAL\\', \\'CESAREA\\', \\'COMPLETADO\\'\\n        ) THEN \\'EXITOSO\\'\\n\\n        WHEN s.estado_normalizado IN (\\n            \\'PENDIENTE\\', \\'EN_PROCESO\\'\\n        ) THEN \\'PENDIENTE\\'\\n\\n        WHEN s.estado_normalizado IN (\\n            \\'ANULADO\\', \\'VENCIDA\\', \\'VENCIDO\\',\\n            \\'RECHAZADO\\', \\'DEVUELTO\\', \\'OBSERVADO\\', \\'RIESGO\\'\\n        ) THEN \\'OBSERVADO\\'\\n\\n        WHEN s.estado_normalizado = \\'SIN_ESTADO\\' THEN \\'SIN_ESTADO\\'\\n\\n        ELSE \\'OTRO\\'\\n    END AS grupo_estado,\\n    s.estado_normalizado AS descripcion\\nFROM (\\n    SELECT ISNULL(NULLIF(UPPER(TRIM(estado)), \\'\\'), \\'SIN_ESTADO\\') AS estado_normalizado\\n    FROM silver.bja_inscripciones\\n\\n    UNION\\n\\n    SELECT ISNULL(NULLIF(UPPER(TRIM(resultado)), \\'\\'), \\'SIN_ESTADO\\')\\n    FROM silver.bja_controles_prenatales\\n\\n    UNION\\n\\n    SELECT ISNULL(NULLIF(UPPER(TRIM(resultado)), \\'\\'), \\'SIN_ESTADO\\')\\n    FROM silver.bja_controles_pediatricos\\n\\n    UNION\\n\\n    SELECT ISNULL(NULLIF(UPPER(TRIM(tipo_parto)), \\'\\'), \\'SIN_ESTADO\\')\\n    FROM silver.bja_partos\\n\\n    UNION\\n\\n    SELECT ISNULL(NULLIF(UPPER(TRIM(estado_pago)), \\'\\'), \\'SIN_ESTADO\\')\\n    FROM silver.bja_pagos\\n\\n    UNION\\n\\n    SELECT ISNULL(NULLIF(UPPER(TRIM(estado)), \\'\\'), \\'SIN_ESTADO\\')\\n    FROM silver.sup_inscripciones\\n\\n    UNION\\n\\n    SELECT ISNULL(NULLIF(UPPER(TRIM(estado)), \\'\\'), \\'SIN_ESTADO\\')\\n    FROM silver.sup_boletas\\n\\n    UNION\\n\\n    SELECT ISNULL(NULLIF(UPPER(TRIM(estado)), \\'\\'), \\'SIN_ESTADO\\')\\n    FROM silver.spl_afiliaciones\\n\\n    UNION\\n\\n    SELECT ISNULL(NULLIF(UPPER(TRIM(estado)), \\'\\'), \\'SIN_ESTADO\\')\\n    FROM silver.spl_certificados_medicos\\n\\n    UNION\\n\\n    SELECT ISNULL(NULLIF(UPPER(TRIM(estado)), \\'\\'), \\'SIN_ESTADO\\')\\n    FROM silver.spl_asignaciones_mensuales\\n\\n    UNION\\n\\n    SELECT ISNULL(NULLIF(UPPER(TRIM(estado)), \\'\\'), \\'SIN_ESTADO\\')\\n    FROM silver.as_recepciones\\n\\n    UNION\\n\\n    SELECT ISNULL(NULLIF(UPPER(TRIM(estado)), \\'\\'), \\'SIN_ESTADO\\')\\n    FROM silver.as_despachos\\n) s',",
+				"     format: 'query') ~> source1",
+				"source1 derive(estado_normalizado = upper(trim(estado_normalizado)),",
+				"          grupo_estado = upper(trim(grupo_estado)),",
+				"          descripcion = upper(trim(descripcion))) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          estado_key as integer,",
+				"          estado_normalizado as string,",
+				"          grupo_estado as string,",
+				"          descripcion as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          estado_normalizado,",
+				"          grupo_estado,",
+				"          descripcion",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}

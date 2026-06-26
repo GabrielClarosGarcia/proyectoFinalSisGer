@@ -1,0 +1,17 @@
+{
+	"name": "df_silver_eventos_programas_sociales",
+	"properties": {
+		"folder": {
+			"name": "silver/consolidadas"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [],
+			"sinks": [],
+			"transformations": [],
+			"scriptLines": [
+				""
+			]
+		}
+	}
+}

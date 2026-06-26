@@ -1,0 +1,71 @@
+{
+	"name": "df_gold_dim_programa_social",
+	"properties": {
+		"folder": {
+			"name": "gold"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "gold_dim_programa_social",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "gold_dim_programa_social",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          programa_key as integer,",
+				"          codigo_programa as string,",
+				"          nombre_programa as string,",
+				"          tipo_programa as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT \\n    \\'BJA\\' AS codigo_programa,\\n    \\'Bono Juana Azurduy\\' AS nombre_programa,\\n    \\'Transferencia monetaria condicionada\\' AS tipo_programa\\n\\nUNION ALL\\n\\nSELECT \\n    \\'SUP\\' AS codigo_programa,\\n    \\'Subsidio Prenatal\\' AS nombre_programa,\\n    \\'Entrega nutricional\\' AS tipo_programa\\n\\nUNION ALL\\n\\nSELECT \\n    \\'SPL\\' AS codigo_programa,\\n    \\'Subsidio Lactancia\\' AS nombre_programa,\\n    \\'Asignación mensual y productos\\' AS tipo_programa\\n\\nUNION ALL\\n\\nSELECT \\n    \\'AS\\' AS codigo_programa,\\n    \\'Agencia Distribuidora\\' AS nombre_programa,\\n    \\'Logística y distribución\\' AS tipo_programa',",
+				"     format: 'query') ~> source1",
+				"source1 derive(codigo_programa = upper(trim(codigo_programa)),",
+				"          nombre_programa = initCap(regexReplace(trim(nombre_programa), '\\\\s+', ' ')),",
+				"          tipo_programa = initCap(regexReplace(trim(tipo_programa), '\\\\s+', ' '))) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          programa_key as integer,",
+				"          codigo_programa as string,",
+				"          nombre_programa as string,",
+				"          tipo_programa as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          codigo_programa,",
+				"          nombre_programa,",
+				"          tipo_programa",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}

@@ -1,0 +1,84 @@
+{
+	"name": "df_gold_dim_producto_paquete",
+	"properties": {
+		"folder": {
+			"name": "gold"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "gold_dim_producto_paquete",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "gold_dim_producto_paquete",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          producto_key as integer,",
+				"          producto_id_origen as integer,",
+				"          fuente_origen as string,",
+				"          nombre_producto as string,",
+				"          contenido as string,",
+				"          peso_estandar_kg as decimal(18,2),",
+				"          costo_estimado_bs as decimal(18,2),",
+				"          fecha_carga as timestamp",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT DISTINCT\\n    paquete_id AS producto_id_origen,\\n    \\'SUP\\' AS fuente_origen,\\n    nombre AS nombre_producto,\\n    contenido,\\n    peso_estandar_kg,\\n    costo_estimado_bs\\nFROM silver.sup_catalogo_paquetes\\nWHERE paquete_id IS NOT NULL\\n  AND registro_valido = 1\\n\\nUNION ALL\\n\\nSELECT DISTINCT\\n    NULL AS producto_id_origen,\\n    \\'SPL\\' AS fuente_origen,\\n    productos AS nombre_producto,\\n    productos AS contenido,\\n    NULL AS peso_estandar_kg,\\n    NULL AS costo_estimado_bs\\nFROM silver.spl_entregas_agencia\\nWHERE productos IS NOT NULL\\n  AND productos <> \\'Sin Productos\\'\\n\\nUNION ALL\\n\\nSELECT DISTINCT\\n    NULL AS producto_id_origen,\\n    \\'SPL\\' AS fuente_origen,\\n    tipo_carne AS nombre_producto,\\n    tipo_carne AS contenido,\\n    NULL AS peso_estandar_kg,\\n    NULL AS costo_estimado_bs\\nFROM silver.spl_entregas_supermercado\\nWHERE tipo_carne IS NOT NULL\\n  AND tipo_carne <> \\'SIN_TIPO_CARNE\\'',",
+				"     format: 'query') ~> source1",
+				"source1 derive(fuente_origen = upper(trim(fuente_origen)),",
+				"          nombre_producto = initCap(regexReplace(trim(nombre_producto), '\\\\s+', ' ')),",
+				"          contenido = iifNull(initCap(regexReplace(trim(contenido), '\\\\s+', ' ')), 'Sin Contenido'),",
+				"          peso_estandar_kg = iifNull(peso_estandar_kg, 0.0),",
+				"          costo_estimado_bs = iifNull(costo_estimado_bs, 0.0)) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          producto_key as integer,",
+				"          producto_id_origen as integer,",
+				"          fuente_origen as string,",
+				"          nombre_producto as string,",
+				"          contenido as string,",
+				"          peso_estandar_kg as decimal(18,2),",
+				"          costo_estimado_bs as decimal(18,2),",
+				"          fecha_carga as timestamp",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          producto_id_origen,",
+				"          fuente_origen,",
+				"          nombre_producto,",
+				"          contenido,",
+				"          peso_estandar_kg,",
+				"          costo_estimado_bs",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}

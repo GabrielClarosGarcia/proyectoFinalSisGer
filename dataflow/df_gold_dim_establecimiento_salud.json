@@ -1,0 +1,98 @@
+{
+	"name": "df_gold_dim_establecimiento_salud",
+	"properties": {
+		"folder": {
+			"name": "gold"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "gold_dim_establecimiento_salud",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "gold_dim_establecimiento_salud",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          establecimiento_key as integer,",
+				"          establecimiento_id_origen as integer,",
+				"          fuente_origen as string,",
+				"          codigo_snis as string,",
+				"          nombre as string,",
+				"          tipo as string,",
+				"          nivel_atencion as string,",
+				"          municipio as string,",
+				"          departamento as string,",
+				"          red_salud as string,",
+				"          estado as string,",
+				"          fecha_carga as timestamp",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT DISTINCT\\n    establecimiento_id AS establecimiento_id_origen,\\n    \\'BJA\\' AS fuente_origen,\\n    codigo_snis,\\n    nombre,\\n    tipo,\\n    nivel_atencion,\\n    municipio,\\n    departamento,\\n    red_salud,\\n    estado\\nFROM silver.bja_establecimientos_salud\\nWHERE establecimiento_id IS NOT NULL\\n  AND registro_valido = 1\\n\\nUNION ALL\\n\\nSELECT DISTINCT\\n    establecimiento_id AS establecimiento_id_origen,\\n    \\'SUP\\' AS fuente_origen,\\n    codigo_snis,\\n    nombre,\\n    tipo,\\n    nivel_atencion,\\n    municipio,\\n    departamento,\\n    red_salud,\\n    estado\\nFROM silver.sup_establecimientos\\nWHERE establecimiento_id IS NOT NULL\\n  AND registro_valido = 1',",
+				"     format: 'query') ~> source1",
+				"source1 derive(establecimiento_id_origen = toInteger(establecimiento_id_origen),",
+				"          fuente_origen = upper(trim(fuente_origen)),",
+				"          codigo_snis = upper(regexReplace(trim(codigo_snis), '\\\\s+', '')),",
+				"          nombre = initCap(regexReplace(trim(nombre), '\\\\s+', ' ')),",
+				"          municipio = initCap(regexReplace(trim(municipio), '\\\\s+', ' ')),",
+				"          departamento = initCap(regexReplace(trim(departamento), '\\\\s+', ' ')),",
+				"          estado = upper(trim(estado))) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          establecimiento_key as integer,",
+				"          establecimiento_id_origen as integer,",
+				"          fuente_origen as string,",
+				"          codigo_snis as string,",
+				"          nombre as string,",
+				"          tipo as string,",
+				"          nivel_atencion as string,",
+				"          municipio as string,",
+				"          departamento as string,",
+				"          red_salud as string,",
+				"          estado as string,",
+				"          fecha_carga as timestamp",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          establecimiento_id_origen,",
+				"          fuente_origen,",
+				"          codigo_snis,",
+				"          nombre,",
+				"          tipo,",
+				"          nivel_atencion,",
+				"          municipio,",
+				"          departamento,",
+				"          red_salud,",
+				"          estado",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}

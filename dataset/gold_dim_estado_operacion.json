@@ -1,0 +1,37 @@
+{
+	"name": "gold_dim_estado_operacion",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dw_beneficiarios",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "gold"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "estado_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "estado_normalizado",
+				"type": "varchar"
+			},
+			{
+				"name": "grupo_estado",
+				"type": "varchar"
+			},
+			{
+				"name": "descripcion",
+				"type": "varchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "gold",
+			"table": "dim_estado_operacion"
+		}
+	}
+}

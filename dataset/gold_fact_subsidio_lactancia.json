@@ -1,0 +1,140 @@
+{
+	"name": "gold_fact_subsidio_lactancia",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dw_beneficiarios",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "gold"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "spl_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "fecha_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "beneficiaria_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "programa_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "producto_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "estado_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "tipo_evento",
+				"type": "varchar"
+			},
+			{
+				"name": "id_evento_origen",
+				"type": "varchar"
+			},
+			{
+				"name": "cantidad_eventos",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "monto_bs",
+				"type": "decimal",
+				"precision": 18,
+				"scale": 2
+			},
+			{
+				"name": "monto_productos",
+				"type": "decimal",
+				"precision": 18,
+				"scale": 2
+			},
+			{
+				"name": "monto_carnes",
+				"type": "decimal",
+				"precision": 18,
+				"scale": 2
+			},
+			{
+				"name": "cantidad_kg",
+				"type": "decimal",
+				"precision": 18,
+				"scale": 2
+			},
+			{
+				"name": "peso_kg",
+				"type": "decimal",
+				"precision": 18,
+				"scale": 2
+			},
+			{
+				"name": "mes",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "gestion",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "tipo_subsidio",
+				"type": "varchar"
+			},
+			{
+				"name": "tipo_carne",
+				"type": "varchar"
+			},
+			{
+				"name": "productos",
+				"type": "varchar"
+			},
+			{
+				"name": "empleador",
+				"type": "varchar"
+			},
+			{
+				"name": "caja_salud",
+				"type": "varchar"
+			},
+			{
+				"name": "supermercado",
+				"type": "varchar"
+			},
+			{
+				"name": "punto_entrega",
+				"type": "varchar"
+			},
+			{
+				"name": "lote",
+				"type": "varchar"
+			},
+			{
+				"name": "fecha_carga",
+				"type": "datetime2",
+				"scale": 7
+			}
+		],
+		"typeProperties": {
+			"schema": "gold",
+			"table": "fact_subsidio_lactancia"
+		}
+	}
+}

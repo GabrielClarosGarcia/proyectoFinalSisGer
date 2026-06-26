@@ -1,0 +1,122 @@
+{
+	"name": "df_gold_fact_bja",
+	"properties": {
+		"folder": {
+			"name": "gold"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "gold_fact_bja",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "gold_fact_bja",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          bja_key as integer,",
+				"          fecha_key as integer,",
+				"          beneficiaria_key as integer,",
+				"          programa_key as integer,",
+				"          establecimiento_key as integer,",
+				"          estado_key as integer,",
+				"          tipo_evento as string,",
+				"          id_evento_origen as string,",
+				"          cantidad_eventos as integer,",
+				"          nro_control as integer,",
+				"          semana_gestacion as integer,",
+				"          monto_bs as decimal(18,2),",
+				"          peso_madre_kg as decimal(18,2),",
+				"          peso_nino_kg as decimal(18,2),",
+				"          peso_nacimiento_kg as decimal(18,2),",
+				"          talla_nacimiento_cm as decimal(18,2),",
+				"          concepto_pago as string,",
+				"          canal_pago as string,",
+				"          tipo_parto as string,",
+				"          vacuna_aplicada as string,",
+				"          fecha_carga as timestamp",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT\\n    CAST(CONVERT(VARCHAR(8), i.fecha_inscripcion, 112) AS INT) AS fecha_key,\\n    b.beneficiaria_key,\\n    pr.programa_key,\\n    es.establecimiento_key,\\n    eo.estado_key,\\n    \\'INSCRIPCION\\' AS tipo_evento,\\n    CAST(i.inscripcion_id AS VARCHAR(100)) AS id_evento_origen,\\n    1 AS cantidad_eventos,\\n    NULL AS nro_control,\\n    i.semana_gestacion,\\n    NULL AS monto_bs,\\n    NULL AS peso_madre_kg,\\n    NULL AS peso_nino_kg,\\n    NULL AS peso_nacimiento_kg,\\n    NULL AS talla_nacimiento_cm,\\n    NULL AS concepto_pago,\\n    NULL AS canal_pago,\\n    NULL AS tipo_parto,\\n    NULL AS vacuna_aplicada\\nFROM silver.bja_inscripciones i\\nLEFT JOIN gold.dim_beneficiaria b\\n    ON b.ci_normalizado = i.ci_beneficiaria_normalizado\\nLEFT JOIN gold.dim_programa_social pr\\n    ON pr.codigo_programa = \\'BJA\\'\\nLEFT JOIN gold.dim_establecimiento_salud es\\n    ON es.establecimiento_id_origen = i.establecimiento_id\\n   AND es.fuente_origen = \\'BJA\\'\\nLEFT JOIN gold.dim_estado_operacion eo\\n    ON eo.estado_normalizado = i.estado\\nWHERE i.registro_valido = 1\\n\\nUNION ALL\\n\\nSELECT\\n    CAST(CONVERT(VARCHAR(8), c.fecha_control, 112) AS INT),\\n    b.beneficiaria_key,\\n    pr.programa_key,\\n    es.establecimiento_key,\\n    eo.estado_key,\\n    \\'CONTROL_PRENATAL\\',\\n    CAST(c.control_prenatal_id AS VARCHAR(100)),\\n    1,\\n    c.nro_control,\\n    c.semana_gestacion,\\n    NULL,\\n    c.peso_madre_kg,\\n    NULL,\\n    NULL,\\n    NULL,\\n    NULL,\\n    NULL,\\n    NULL,\\n    NULL\\nFROM silver.bja_controles_prenatales c\\nLEFT JOIN gold.dim_beneficiaria b\\n    ON b.ci_normalizado = c.ci_beneficiaria_normalizado\\nLEFT JOIN gold.dim_programa_social pr\\n    ON pr.codigo_programa = \\'BJA\\'\\nLEFT JOIN gold.dim_establecimiento_salud es\\n    ON es.establecimiento_id_origen = c.establecimiento_id\\n   AND es.fuente_origen = \\'BJA\\'\\nLEFT JOIN gold.dim_estado_operacion eo\\n    ON eo.estado_normalizado = c.resultado\\nWHERE c.registro_valido = 1\\n\\nUNION ALL\\n\\nSELECT\\n    CAST(CONVERT(VARCHAR(8), p.fecha_pago, 112) AS INT),\\n    b.beneficiaria_key,\\n    pr.programa_key,\\n    NULL,\\n    eo.estado_key,\\n    \\'PAGO\\',\\n    CAST(p.pago_id AS VARCHAR(100)),\\n    1,\\n    NULL,\\n    NULL,\\n    p.monto_bs,\\n    NULL,\\n    NULL,\\n    NULL,\\n    NULL,\\n    p.concepto_pago,\\n    p.canal_pago,\\n    NULL,\\n    NULL\\nFROM silver.bja_pagos p\\nLEFT JOIN gold.dim_beneficiaria b\\n    ON b.ci_normalizado = p.ci_beneficiaria_normalizado\\nLEFT JOIN gold.dim_programa_social pr\\n    ON pr.codigo_programa = \\'BJA\\'\\nLEFT JOIN gold.dim_estado_operacion eo\\n    ON eo.estado_normalizado = p.estado_pago\\nWHERE p.registro_valido = 1',",
+				"     format: 'query') ~> source1",
+				"source1 derive(tipo_evento = upper(trim(tipo_evento)),",
+				"          id_evento_origen = upper(trim(id_evento_origen)),",
+				"          cantidad_eventos = iifNull(toInteger(cantidad_eventos), 1),",
+				"          monto_bs = iifNull(monto_bs, 0.0)) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          bja_key as integer,",
+				"          fecha_key as integer,",
+				"          beneficiaria_key as integer,",
+				"          programa_key as integer,",
+				"          establecimiento_key as integer,",
+				"          estado_key as integer,",
+				"          tipo_evento as string,",
+				"          id_evento_origen as string,",
+				"          cantidad_eventos as integer,",
+				"          nro_control as integer,",
+				"          semana_gestacion as integer,",
+				"          monto_bs as decimal(18,2),",
+				"          peso_madre_kg as decimal(18,2),",
+				"          peso_nino_kg as decimal(18,2),",
+				"          peso_nacimiento_kg as decimal(18,2),",
+				"          talla_nacimiento_cm as decimal(18,2),",
+				"          concepto_pago as string,",
+				"          canal_pago as string,",
+				"          tipo_parto as string,",
+				"          vacuna_aplicada as string,",
+				"          fecha_carga as timestamp",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          fecha_key,",
+				"          beneficiaria_key,",
+				"          programa_key,",
+				"          establecimiento_key,",
+				"          estado_key,",
+				"          tipo_evento,",
+				"          id_evento_origen,",
+				"          cantidad_eventos,",
+				"          nro_control,",
+				"          semana_gestacion,",
+				"          monto_bs,",
+				"          peso_madre_kg,",
+				"          peso_nino_kg,",
+				"          peso_nacimiento_kg,",
+				"          talla_nacimiento_cm,",
+				"          concepto_pago,",
+				"          canal_pago,",
+				"          tipo_parto,",
+				"          vacuna_aplicada",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}

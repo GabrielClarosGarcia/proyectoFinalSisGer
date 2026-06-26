@@ -1,0 +1,112 @@
+{
+	"name": "gold_fact_agencia_distribucion",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "dw_beneficiarios",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "gold"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "agencia_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "fecha_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "programa_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "estado_key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "tipo_movimiento",
+				"type": "varchar"
+			},
+			{
+				"name": "id_movimiento_origen",
+				"type": "varchar"
+			},
+			{
+				"name": "nro_lote",
+				"type": "varchar"
+			},
+			{
+				"name": "almacen",
+				"type": "varchar"
+			},
+			{
+				"name": "transportista",
+				"type": "varchar"
+			},
+			{
+				"name": "vehiculo",
+				"type": "varchar"
+			},
+			{
+				"name": "centro_destino",
+				"type": "varchar"
+			},
+			{
+				"name": "cantidad_recibida",
+				"type": "decimal",
+				"precision": 18,
+				"scale": 2
+			},
+			{
+				"name": "cantidad_despachada",
+				"type": "decimal",
+				"precision": 18,
+				"scale": 2
+			},
+			{
+				"name": "unidad",
+				"type": "varchar"
+			},
+			{
+				"name": "condicion",
+				"type": "varchar"
+			},
+			{
+				"name": "temperatura_llegada",
+				"type": "decimal",
+				"precision": 18,
+				"scale": 2
+			},
+			{
+				"name": "dias_transito",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "responsable",
+				"type": "varchar"
+			},
+			{
+				"name": "nro_guia",
+				"type": "varchar"
+			},
+			{
+				"name": "fecha_carga",
+				"type": "datetime2",
+				"scale": 7
+			}
+		],
+		"typeProperties": {
+			"schema": "gold",
+			"table": "fact_agencia_distribucion"
+		}
+	}
+}
