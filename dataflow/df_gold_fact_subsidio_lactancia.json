@@ -1,16 +1,135 @@
 {
-	"name": "dataflow2",
+	"name": "df_gold_fact_subsidio_lactancia",
 	"properties": {
 		"folder": {
 			"name": "gold"
 		},
 		"type": "MappingDataFlow",
 		"typeProperties": {
-			"sources": [],
-			"sinks": [],
-			"transformations": [],
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "gold_fact_subsidio_lactancia",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "gold_fact_subsidio_lactancia",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
 			"scriptLines": [
-				""
+				"source(output(",
+				"          spl_key as integer,",
+				"          fecha_key as integer,",
+				"          beneficiaria_key as integer,",
+				"          programa_key as integer,",
+				"          producto_key as integer,",
+				"          estado_key as integer,",
+				"          tipo_evento as string,",
+				"          id_evento_origen as string,",
+				"          cantidad_eventos as integer,",
+				"          monto_bs as decimal(18,2),",
+				"          monto_productos as decimal(18,2),",
+				"          monto_carnes as decimal(18,2),",
+				"          cantidad_kg as decimal(18,2),",
+				"          peso_kg as decimal(18,2),",
+				"          mes as integer,",
+				"          gestion as integer,",
+				"          tipo_subsidio as string,",
+				"          tipo_carne as string,",
+				"          productos as string,",
+				"          empleador as string,",
+				"          caja_salud as string,",
+				"          supermercado as string,",
+				"          punto_entrega as string,",
+				"          lote as string,",
+				"          fecha_carga as timestamp",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT\\n    CAST(CONVERT(VARCHAR(8), a.fecha_afiliacion, 112) AS INT) AS fecha_key,\\n    b.beneficiaria_key,\\n    pr.programa_key,\\n    NULL AS producto_key,\\n    eo.estado_key,\\n    \\'AFILIACION\\' AS tipo_evento,\\n    CAST(a.afiliacion_id AS VARCHAR(100)) AS id_evento_origen,\\n    1 AS cantidad_eventos,\\n    NULL AS monto_bs,\\n    NULL AS monto_productos,\\n    NULL AS monto_carnes,\\n    NULL AS cantidad_kg,\\n    NULL AS peso_kg,\\n    NULL AS mes,\\n    NULL AS gestion,\\n    a.tipo_subsidio,\\n    NULL AS tipo_carne,\\n    NULL AS productos,\\n    emp.razon_social AS empleador,\\n    cj.nombre AS caja_salud,\\n    NULL AS supermercado,\\n    NULL AS punto_entrega,\\n    NULL AS lote\\nFROM silver.spl_afiliaciones a\\nLEFT JOIN gold.dim_beneficiaria b\\n    ON b.ci_normalizado = a.ci_beneficiaria_normalizado\\nLEFT JOIN gold.dim_programa_social pr\\n    ON pr.codigo_programa = \\'SPL\\'\\nLEFT JOIN gold.dim_estado_operacion eo\\n    ON eo.estado_normalizado = a.estado\\nLEFT JOIN silver.spl_empleadores emp\\n    ON emp.empleador_id = a.empleador_id\\nLEFT JOIN silver.spl_cajas cj\\n    ON cj.caja_id = a.caja_id\\nWHERE a.registro_valido = 1\\n\\nUNION ALL\\n\\nSELECT\\n    CAST(CONVERT(VARCHAR(8), DATEFROMPARTS(am.gestion, am.mes, 1), 112) AS INT),\\n    b.beneficiaria_key,\\n    pr.programa_key,\\n    NULL,\\n    eo.estado_key,\\n    \\'ASIGNACION\\',\\n    CAST(am.asignacion_id AS VARCHAR(100)),\\n    1,\\n    am.monto_bs,\\n    am.monto_productos,\\n    am.monto_carnes,\\n    NULL,\\n    NULL,\\n    am.mes,\\n    am.gestion,\\n    a.tipo_subsidio,\\n    NULL,\\n    NULL,\\n    emp.razon_social,\\n    cj.nombre,\\n    NULL,\\n    NULL,\\n    NULL\\nFROM silver.spl_asignaciones_mensuales am\\nLEFT JOIN silver.spl_afiliaciones a\\n    ON a.afiliacion_id = am.afiliacion_id\\nLEFT JOIN gold.dim_beneficiaria b\\n    ON b.ci_normalizado = a.ci_beneficiaria_normalizado\\nLEFT JOIN gold.dim_programa_social pr\\n    ON pr.codigo_programa = \\'SPL\\'\\nLEFT JOIN gold.dim_estado_operacion eo\\n    ON eo.estado_normalizado = am.estado\\nLEFT JOIN silver.spl_empleadores emp\\n    ON emp.empleador_id = a.empleador_id\\nLEFT JOIN silver.spl_cajas cj\\n    ON cj.caja_id = a.caja_id\\nWHERE am.registro_valido = 1\\n  AND am.gestion IS NOT NULL\\n  AND am.mes BETWEEN 1 AND 12\\n\\nUNION ALL\\n\\nSELECT\\n    CAST(CONVERT(VARCHAR(8), ea.fecha_entrega, 112) AS INT),\\n    b.beneficiaria_key,\\n    pr.programa_key,\\n    dp.producto_key,\\n    NULL,\\n    \\'ENTREGA_AGENCIA\\',\\n    CAST(ea.entrega_ag_id AS VARCHAR(100)),\\n    1,\\n    NULL,\\n    NULL,\\n    NULL,\\n    NULL,\\n    ea.peso_kg,\\n    NULL,\\n    NULL,\\n    NULL,\\n    NULL,\\n    ea.productos,\\n    NULL,\\n    NULL,\\n    NULL,\\n    ea.punto_entrega,\\n    ea.lote\\nFROM silver.spl_entregas_agencia ea\\nLEFT JOIN gold.dim_beneficiaria b\\n    ON b.ci_normalizado = ea.ci_beneficiaria_normalizado\\nLEFT JOIN gold.dim_programa_social pr\\n    ON pr.codigo_programa = \\'SPL\\'\\nLEFT JOIN gold.dim_producto_paquete dp\\n    ON dp.nombre_producto = ea.productos\\n   AND dp.fuente_origen = \\'SPL\\'\\nWHERE ea.registro_valido = 1',",
+				"     format: 'query') ~> source1",
+				"source1 derive(tipo_evento = upper(trim(tipo_evento)),",
+				"          cantidad_eventos = iifNull(toInteger(cantidad_eventos), 1),",
+				"          monto_bs = iifNull(monto_bs, 0.0),",
+				"          monto_productos = iifNull(monto_productos, 0.0),",
+				"          monto_carnes = iifNull(monto_carnes, 0.0),",
+				"          lote = iifNull(upper(trim(lote)), 'SIN_LOTE')) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          spl_key as integer,",
+				"          fecha_key as integer,",
+				"          beneficiaria_key as integer,",
+				"          programa_key as integer,",
+				"          producto_key as integer,",
+				"          estado_key as integer,",
+				"          tipo_evento as string,",
+				"          id_evento_origen as string,",
+				"          cantidad_eventos as integer,",
+				"          monto_bs as decimal(18,2),",
+				"          monto_productos as decimal(18,2),",
+				"          monto_carnes as decimal(18,2),",
+				"          cantidad_kg as decimal(18,2),",
+				"          peso_kg as decimal(18,2),",
+				"          mes as integer,",
+				"          gestion as integer,",
+				"          tipo_subsidio as string,",
+				"          tipo_carne as string,",
+				"          productos as string,",
+				"          empleador as string,",
+				"          caja_salud as string,",
+				"          supermercado as string,",
+				"          punto_entrega as string,",
+				"          lote as string,",
+				"          fecha_carga as timestamp",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          fecha_key,",
+				"          beneficiaria_key,",
+				"          programa_key,",
+				"          producto_key,",
+				"          estado_key,",
+				"          tipo_evento,",
+				"          id_evento_origen,",
+				"          cantidad_eventos,",
+				"          monto_bs,",
+				"          monto_productos,",
+				"          monto_carnes,",
+				"          cantidad_kg,",
+				"          peso_kg,",
+				"          mes,",
+				"          gestion,",
+				"          tipo_subsidio,",
+				"          tipo_carne,",
+				"          productos,",
+				"          empleador,",
+				"          caja_salud,",
+				"          supermercado,",
+				"          punto_entrega,",
+				"          lote",
+				"     )) ~> sink1"
 			]
 		}
 	}

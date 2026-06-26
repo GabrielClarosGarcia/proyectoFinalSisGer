@@ -1,16 +1,122 @@
 {
-	"name": "dataflow1",
+	"name": "df_gold_fact_agencia_distribucion",
 	"properties": {
 		"folder": {
 			"name": "gold"
 		},
 		"type": "MappingDataFlow",
 		"typeProperties": {
-			"sources": [],
-			"sinks": [],
-			"transformations": [],
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "gold_fact_agencia_distribucion",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "gold_fact_agencia_distribucion",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
 			"scriptLines": [
-				""
+				"source(output(",
+				"          agencia_key as integer,",
+				"          fecha_key as integer,",
+				"          programa_key as integer,",
+				"          estado_key as integer,",
+				"          tipo_movimiento as string,",
+				"          id_movimiento_origen as string,",
+				"          nro_lote as string,",
+				"          almacen as string,",
+				"          transportista as string,",
+				"          vehiculo as string,",
+				"          centro_destino as string,",
+				"          cantidad_recibida as decimal(18,2),",
+				"          cantidad_despachada as decimal(18,2),",
+				"          unidad as string,",
+				"          condicion as string,",
+				"          temperatura_llegada as decimal(18,2),",
+				"          dias_transito as integer,",
+				"          responsable as string,",
+				"          nro_guia as string,",
+				"          fecha_carga as timestamp",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT\\n    CAST(CONVERT(VARCHAR(8), r.fecha_recepcion, 112) AS INT) AS fecha_key,\\n    pr.programa_key,\\n    eo.estado_key,\\n    \\'RECEPCION\\' AS tipo_movimiento,\\n    CAST(r.recepcion_id AS VARCHAR(100)) AS id_movimiento_origen,\\n    r.nro_lote,\\n    al.nombre AS almacen,\\n    tr.razon_social AS transportista,\\n    v.descripcion AS vehiculo,\\n    NULL AS centro_destino,\\n    r.cantidad_recibida,\\n    NULL AS cantidad_despachada,\\n    r.unidad,\\n    r.condicion,\\n    r.temperatura_llegada,\\n    NULL AS dias_transito,\\n    r.responsable,\\n    r.nro_guia_remision AS nro_guia\\nFROM silver.as_recepciones r\\nLEFT JOIN gold.dim_programa_social pr\\n    ON pr.codigo_programa = \\'AS\\'\\nLEFT JOIN gold.dim_estado_operacion eo\\n    ON eo.estado_normalizado = r.estado\\nLEFT JOIN silver.as_almacenes al\\n    ON al.almacen_id = r.almacen_id\\nLEFT JOIN silver.as_transportistas tr\\n    ON tr.transportista_id = r.transportista_id\\nLEFT JOIN silver.as_vehiculos v\\n    ON v.vehiculo_id = r.vehiculo_id\\nWHERE r.registro_valido = 1\\n\\nUNION ALL\\n\\nSELECT\\n    CAST(CONVERT(VARCHAR(8), d.fecha_despacho, 112) AS INT),\\n    pr.programa_key,\\n    eo.estado_key,\\n    \\'DESPACHO\\',\\n    CAST(d.despacho_id AS VARCHAR(100)),\\n    d.nro_lote,\\n    al.nombre,\\n    tr.razon_social,\\n    v.descripcion,\\n    d.centro_destino,\\n    NULL,\\n    d.cantidad_despachada,\\n    NULL,\\n    NULL,\\n    NULL,\\n    d.dias_transito,\\n    d.responsable,\\n    d.nro_guia_despacho\\nFROM silver.as_despachos d\\nLEFT JOIN gold.dim_programa_social pr\\n    ON pr.codigo_programa = \\'AS\\'\\nLEFT JOIN gold.dim_estado_operacion eo\\n    ON eo.estado_normalizado = d.estado\\nLEFT JOIN silver.as_almacenes al\\n    ON al.almacen_id = d.almacen_id\\nLEFT JOIN silver.as_transportistas tr\\n    ON tr.transportista_id = d.transportista_id\\nLEFT JOIN silver.as_vehiculos v\\n    ON v.vehiculo_id = d.vehiculo_id\\nWHERE d.registro_valido = 1',",
+				"     format: 'query') ~> source1",
+				"source1 derive(tipo_movimiento = upper(trim(tipo_movimiento)),",
+				"          nro_lote = iifNull(upper(trim(nro_lote)), 'SIN_LOTE'),",
+				"          almacen = iifNull(initCap(regexReplace(trim(almacen), '\\\\s+', ' ')), 'Sin Almacen'),",
+				"          transportista = iifNull(upper(regexReplace(trim(transportista), '\\\\s+', ' ')), 'SIN_TRANSPORTISTA'),",
+				"          vehiculo = iifNull(initCap(regexReplace(trim(vehiculo), '\\\\s+', ' ')), 'Sin Vehiculo'),",
+				"          centro_destino = iifNull(initCap(regexReplace(trim(centro_destino), '\\\\s+', ' ')), 'Sin Destino'),",
+				"          cantidad_recibida = iifNull(cantidad_recibida, 0.0),",
+				"          cantidad_despachada = iifNull(cantidad_despachada, 0.0)) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          agencia_key as integer,",
+				"          fecha_key as integer,",
+				"          programa_key as integer,",
+				"          estado_key as integer,",
+				"          tipo_movimiento as string,",
+				"          id_movimiento_origen as string,",
+				"          nro_lote as string,",
+				"          almacen as string,",
+				"          transportista as string,",
+				"          vehiculo as string,",
+				"          centro_destino as string,",
+				"          cantidad_recibida as decimal(18,2),",
+				"          cantidad_despachada as decimal(18,2),",
+				"          unidad as string,",
+				"          condicion as string,",
+				"          temperatura_llegada as decimal(18,2),",
+				"          dias_transito as integer,",
+				"          responsable as string,",
+				"          nro_guia as string,",
+				"          fecha_carga as timestamp",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          fecha_key,",
+				"          programa_key,",
+				"          estado_key,",
+				"          tipo_movimiento,",
+				"          id_movimiento_origen,",
+				"          nro_lote,",
+				"          almacen,",
+				"          transportista,",
+				"          vehiculo,",
+				"          centro_destino,",
+				"          cantidad_recibida,",
+				"          cantidad_despachada,",
+				"          unidad,",
+				"          condicion,",
+				"          temperatura_llegada,",
+				"          dias_transito,",
+				"          responsable,",
+				"          nro_guia",
+				"     )) ~> sink1"
 			]
 		}
 	}
