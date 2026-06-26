@@ -15,7 +15,11 @@
 					"name": "source1"
 				}
 			],
-			"sinks": [],
+			"sinks": [
+				{
+					"name": "sink1"
+				}
+			],
 			"transformations": [
 				{
 					"name": "derivedColumn1"
@@ -47,7 +51,11 @@
 				"          cantidad_kg = toDecimal(regexReplace(toString(cantidad_kg), '[^0-9.]', '')),",
 				"          monto_bs = toDecimal(regexReplace(toString(monto_bs), '[^0-9.]', '')),",
 				"          registro_valido = iif(     isNull(entrega_super_id) ||     isNull(asignacion_id) ||     isNull(ci_beneficiaria_normalizado),     false(),     true() ),",
-				"          observacion_calidad = case(     isNull(entrega_super_id), 'entrega_super_id inválido',     isNull(asignacion_id), 'asignacion_id inválido',     isNull(ci_beneficiaria_normalizado), 'CI beneficiaria inválido',     'OK' )) ~> derivedColumn1"
+				"          observacion_calidad = case(     isNull(entrega_super_id), 'entrega_super_id inválido',     isNull(asignacion_id), 'asignacion_id inválido',     isNull(ci_beneficiaria_normalizado), 'CI beneficiaria inválido',     'OK' )) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink1"
 			]
 		}
 	}
